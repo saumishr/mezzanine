@@ -27,12 +27,24 @@ class ThreadedComment(Comment):
     replied_to = models.ForeignKey("self", null=True, editable=False,
                                    related_name="comments")
     rating = RatingField(verbose_name=_("Rating"))
+    bought_category = models.TextField(_("Bought"))
+    
+    rating_parameters = models.TextField(_("RatingParameters"), null=True)
+    rating_parameter_values = models.TextField(_("RatingParameters_Value"), null=True)
 
     objects = CommentManager()
 
     class Meta:
         verbose_name = _("Comment")
         verbose_name_plural = _("Comments")
+        
+    def get_rating_parameters(self):
+        if self.rating_parameters :
+            return self.rating_parameters.split(",")
+    
+    def get_rating_values(self):
+        if self.rating_parameter_values :
+            return self.rating_parameter_values.split(",")
 
     def get_absolute_url(self):
         """
@@ -110,6 +122,7 @@ class AssignedKeyword(Orderable):
 
     def __unicode__(self):
         return unicode(self.keyword)
+
 
 
 class Rating(models.Model):

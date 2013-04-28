@@ -112,7 +112,7 @@ if generic_comments:
         name="COMMENTS_USE_RATINGS",
         description=_("If ``True``, comments can be rated."),
         editable=False,
-        default=True,
+        default=False,
     )
 
 register_setting(
@@ -121,7 +121,7 @@ register_setting(
     description=_("If ``True``, users must log in to rate content "
         "such as blog posts and comments."),
     editable=True,
-    default=False,
+    default=True,
 )
 
 register_setting(

@@ -111,6 +111,11 @@ class ThreadedCommentForm(CommentForm, Html5Mixin):
                     value = user.email
             kwargs["initial"][field] = value
         super(ThreadedCommentForm, self).__init__(*args, **kwargs)
+        categories = args[0].categories.all() # get the list of categories from the post
+        CHOICES = [('', _("-Select-"))]
+        for category in categories:
+            CHOICES = CHOICES + [(str(category), str(category)) ]
+        self.fields['category'] = forms.ChoiceField(label = _("Bought a: "), help_text=_(""), choices=CHOICES, required=False)
 
     def get_comment_model(self):
         """
@@ -122,6 +127,7 @@ class ThreadedCommentForm(CommentForm, Html5Mixin):
         """
         Saves a new comment and sends any notification emails.
         """
+        post_data = request.POST
         comment = self.get_comment_object()
         obj = comment.content_object
         if request.user.is_authenticated():
@@ -129,6 +135,21 @@ class ThreadedCommentForm(CommentForm, Html5Mixin):
         comment.by_author = request.user == getattr(obj, "user", None)
         comment.ip_address = ip_for_request(request)
         comment.replied_to_id = self.data.get("replied_to")
+        comment.bought_category = post_data.get("category")
+        ratedParameters = ""
+        ratedValues = ""
+        if obj.ratingParameters :
+            ratingParameters = obj.ratingParameters.split(',')
+            for ratingParameter in ratingParameters :
+                if post_data.get(ratingParameter + "_value") :
+                    ratedParameters += ratingParameter + ","
+                    ratedValues += post_data.get(ratingParameter + "_value") + ","
+        if ratedParameters != "" :
+            ratedParameters = ratedParameters[:-1]
+        if ratedValues != "" :
+            ratedValues = ratedValues[:-1]
+        comment.rating_parameters = ratedParameters
+        comment.rating_parameter_values = ratedValues
         comment.save()
         comment_was_posted.send(sender=comment.__class__, comment=comment,
                                 request=request)

@@ -7,13 +7,14 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.utils.simplejson import dumps
 from django.utils.translation import ugettext_lazy as _
+from django.template import RequestContext
 
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm, RatingForm
 from mezzanine.generic.models import Keyword
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.views import render, set_cookie, is_spam
-
+from mezzanine.blog.models import BlogPost
 
 @staff_member_required
 def admin_keywords_submit(request):
@@ -107,6 +108,11 @@ def comment(request, template="generic/comments.html"):
         return HttpResponse(dumps({"errors": form.errors}))
     # Show errors with stand-alone comment form.
     context = {"obj": obj, "posted_comment_form": form}
+    if obj.ratingParameters :
+        ratingParameters = obj.ratingParameters.split(',')
+        for ratingParameter in ratingParameters :
+            if post_data.get(ratingParameter + "_value") :
+                context[ratingParameter + "_value"] = post_data.get(ratingParameter + "_value")
     response = render(request, template, context)
     return response
 
@@ -136,3 +142,118 @@ def rating(request):
         ratings = ",".join(rating_form.previous + [rating_form.current])
         set_cookie(response, "mezzanine-rating", ratings)
     return response
+
+
+def commentProfile(request, username):
+    """
+    Get the profile of the comment owner
+    """
+    return HttpResponseRedirect(
+              reverse("mezzanine.accounts.views.profile", 
+                      args=[username]))
+
+def comment_thread_most_liked_view(request, obj, template="generic/includes/comments_most_liked.html"):
+    """
+    Return a list of child comments for the given parent, storing all
+    comments in a dict in the context when first called, using parents
+    as keys for retrieval on subsequent recursive calls from the
+    comments template.
+    """
+    from mezzanine.generic.forms import ThreadedCommentForm
+
+    parent = BlogPost.objects.get(id=obj)
+    context = RequestContext(request)
+    form = ThreadedCommentForm(request, parent)
+    try:
+        context["posted_comment_form"]
+    except KeyError:
+        context["posted_comment_form"] = form
+    context["unposted_comment_form"] = form
+    context["comment_url"] = reverse("comment")
+    context["object_for_comments"] = parent
+    return render(request, template, context)
+ 
+def comment_thread_most_recent_view(request, obj, template="generic/includes/comments_most_recent.html"):
+    """
+    Return a list of child comments for the given parent, storing all
+    comments in a dict in the context when first called, using parents
+    as keys for retrieval on subsequent recursive calls from the
+    comments template.
+    """
+    from mezzanine.generic.forms import ThreadedCommentForm
+
+    parent = BlogPost.objects.get(id=obj)
+    context = RequestContext(request)
+    form = ThreadedCommentForm(request, parent)
+    try:
+        context["posted_comment_form"]
+    except KeyError:
+        context["posted_comment_form"] = form
+    context["unposted_comment_form"] = form
+    context["comment_url"] = reverse("comment")
+    context["object_for_comments"] = parent
+    return render(request, template, context)
+
+ 
+def comment_thread_default_view(request, obj, template="generic/includes/comments.html"):
+    """
+    Return a list of child comments for the given parent, storing all
+    comments in a dict in the context when first called, using parents
+    as keys for retrieval on subsequent recursive calls from the
+    comments template.
+    """
+    from mezzanine.generic.forms import ThreadedCommentForm
+
+    parent = BlogPost.objects.get(id=obj)
+    context = RequestContext(request)
+    form = ThreadedCommentForm(request, parent)
+    try:
+        context["posted_comment_form"]
+    except KeyError:
+        context["posted_comment_form"] = form
+    context["unposted_comment_form"] = form
+    context["comment_url"] = reverse("comment")
+    context["object_for_comments"] = parent
+    return render(request, template, context)
+
+def comment_thread_social_view(request, obj, template="generic/includes/comments_social.html"):
+    """
+    Return a list of child comments for the given parent, storing all
+    comments in a dict in the context when first called, using parents
+    as keys for retrieval on subsequent recursive calls from the
+    comments template.
+    """
+    from mezzanine.generic.forms import ThreadedCommentForm
+
+    parent = BlogPost.objects.get(id=obj)
+    context = RequestContext(request)
+    form = ThreadedCommentForm(request, parent)
+    try:
+        context["posted_comment_form"]
+    except KeyError:
+        context["posted_comment_form"] = form
+    context["unposted_comment_form"] = form
+    context["comment_url"] = reverse("comment")
+    context["object_for_comments"] = parent
+    return render(request, template, context)
+
+def comment_thread_social_view_level2(request, obj, template="generic/includes/comments_social_level2.html"):
+    """
+    Return a list of child comments for the given parent, storing all
+    comments in a dict in the context when first called, using parents
+    as keys for retrieval on subsequent recursive calls from the
+    comments template.
+    """
+    from mezzanine.generic.forms import ThreadedCommentForm
+
+    parent = BlogPost.objects.get(id=obj)
+    context = RequestContext(request)
+    form = ThreadedCommentForm(request, parent)
+    try:
+        context["posted_comment_form"]
+    except KeyError:
+        context["posted_comment_form"] = form
+    context["unposted_comment_form"] = form
+    context["comment_url"] = reverse("comment")
+    context["object_for_comments"] = parent
+    return render(request, template, context)

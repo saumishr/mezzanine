@@ -43,7 +43,7 @@ register_setting(
     description=_("If ``True``, users will have their own public profile "
         "pages."),
     editable=False,
-    default=False,
+    default=True,
 )
 
 register_setting(
