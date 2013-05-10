@@ -6,7 +6,8 @@ from mezzanine.core.fields import FileField
 from mezzanine.core.models import Displayable, Ownable, RichText, Slugged
 from mezzanine.generic.fields import CommentsField, RatingField
 from mezzanine.utils.models import AdminThumbMixin, upload_to
-
+from django.db import models
+from follow import utils
 
 class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
     """
@@ -89,6 +90,7 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
             setattr(self, "_keywords", keywords)
             return self._keywords
 
+utils.register(BlogPost)
 
 class BlogCategory(Slugged):
     """
