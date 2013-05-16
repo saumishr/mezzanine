@@ -157,16 +157,23 @@ def comment_thread_social(context, parent):
         else:
             comments_queryset = parent.comments.visible()
 
-        user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
-        if not user_social_auth_list:
-            user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
-        if user_social_auth_list:
-            user_social_auth = user_social_auth_list[0]    
-            friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
-            for comment in comments_queryset.select_related("user"):
-                if comment.user in friends:
-                    comments[comment.replied_to_id].append(comment)
- 
+        comments_queryset = comments_queryset.order_by('-submit_date')
+
+        #user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
+        #if not user_social_auth_list:
+        #    user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
+        #if user_social_auth_list:
+        #    user_social_auth = user_social_auth_list[0]    
+        #    friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
+        #    for comment in comments_queryset.select_related("user"):
+        #        if comment.user in friends:
+        #            comments[comment.replied_to_id].append(comment)
+        
+        friends = context["request"].user.relationships.following()
+        for comment in comments_queryset.select_related("user"):
+            if comment.user in friends:
+                comments[comment.replied_to_id].append(comment)
+
         context["all_comments"] = comments
     parent_id = parent.id if isinstance(parent, ThreadedComment) else None
     try:
@@ -202,26 +209,34 @@ def comment_thread_social_level2(context, parent):
         else:
             comments_queryset = parent.comments.visible()
 
-        user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
-        if not user_social_auth_list:
-            user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
-        if user_social_auth_list:
-            user_social_auth = user_social_auth_list[0]
-            if user_social_auth:
-                friends_of_friends = cache.get(user_social_auth.user.username+"SocialFriendListLevel2")
-                if  not friends_of_friends:            
-                    friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
-                    friends_of_friends = list(friends)
-                    for friend in friends:
-                        friends_level2 = SocialFriendList.objects.existing_social_friends(friend.social_auth.filter(provider="facebook")[0])
-                        friends_of_friends = list(chain(friends_of_friends, friends_level2))
-                    cache.set(user_social_auth.user.username+"SocialFriendListLevel2", friends_of_friends)
+        #user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
+        #if not user_social_auth_list:
+        #    user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
+        #if user_social_auth_list:
+        #    user_social_auth = user_social_auth_list[0]
+        #    if user_social_auth:
+        #        friends_of_friends = cache.get(user_social_auth.user.username+"SocialFriendListLevel2")
+        #        if  not friends_of_friends:            
+        #            friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
+        #            friends_of_friends = list(friends)
+        #            for friend in friends:
+        #                friends_level2 = SocialFriendList.objects.existing_social_friends(friend.social_auth.filter(provider="facebook")[0])
+        #                friends_of_friends = list(chain(friends_of_friends, friends_level2))
+        #            cache.set(user_social_auth.user.username+"SocialFriendListLevel2", friends_of_friends)
+        friends_of_friends = set()
 
-            comments_queryset = comments_queryset.order_by('-submit_date')
+        friends = context["request"].user.relationships.following()
+        for friend in friends:
+            friends_of_friends.add(friend)
+            friends_level2 = friend.relationships.following()
+            for friend_level2 in friends_level2:
+                friends_of_friends.add(friend_level2)
 
-            for comment in comments_queryset.select_related("user"):
+        comments_queryset = comments_queryset.order_by('-submit_date')
+
+        for comment in comments_queryset.select_related("user"):
                 if comment.user in friends_of_friends:
-                    comments[comment.replied_to_id].append(comment)
+                        comments[comment.replied_to_id].append(comment)
  
         context["all_comments"] = comments
     parent_id = parent.id if isinstance(parent, ThreadedComment) else None
