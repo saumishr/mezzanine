@@ -106,7 +106,7 @@ def fields_for(context, form):
     context["form_for_fields"] = form
     return context
 
-@register.inclusion_tag("includes/form_fields.html", takes_context=True)
+@register.inclusion_tag("includes/comment_form_fields.html", takes_context=True)
 def fields_for_comment(context, form):
     """
     Renders fields for a Comment form.
