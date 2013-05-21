@@ -16,6 +16,8 @@ from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.views import render, set_cookie, is_spam
 from mezzanine.blog.models import BlogPost
 
+from actstream import action
+
 @staff_member_required
 def admin_keywords_submit(request):
     """
@@ -103,6 +105,10 @@ def comment(request, template="generic/comments.html"):
             cookie_name = ThreadedCommentForm.cookie_prefix + field
             cookie_value = post_data.get(field, "")
             set_cookie(response, cookie_name, cookie_value)
+        """
+            Send activity feed to those who follow this vendor page.
+        """
+        action.send(obj, verb=u'has got a new review from', action_object=comment, target=request.user)
         return response
     elif request.is_ajax() and form.errors:
         return HttpResponse(dumps({"errors": form.errors}))
