@@ -8,6 +8,8 @@ from django.shortcuts import redirect
 from django.utils.simplejson import dumps
 from django.utils.translation import ugettext_lazy as _
 from django.template import RequestContext
+from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm, RatingForm
@@ -122,6 +124,51 @@ def comment(request, template="generic/comments.html"):
     response = render(request, template, context)
     return response
 
+
+from django.template import RequestContext
+def comment_on_review(request, template="generic/comments.html"):
+    """
+    Handle a ``ThreadedCommentForm`` submission and redirect back to its
+    related object.
+    """
+
+    response = initial_validation(request, "comment")
+    if isinstance(response, HttpResponse):
+        return response
+    obj, post_data = response
+
+    form = ThreadedCommentForm(request, obj, post_data)
+    if form.is_valid():
+        url = obj.get_absolute_url()
+        if is_spam(request, form, url):
+            return redirect(url)  
+        comment = form.save(request)
+        response = redirect(add_cache_bypass(comment.get_absolute_url()))
+
+        return response
+    elif request.is_ajax() and form.errors:
+        return HttpResponse(dumps({"errors": form.errors}))
+
+    # Show errors with stand-alone comment form.
+    context = {"obj": obj, "posted_comment_form": form}
+    response = render(request, template, context)
+    return response
+
+def fetch_comments_on_obj(request, content_type_id, object_id):
+    ctype = get_object_or_404(ContentType, pk=content_type_id)
+    parent = get_object_or_404(ctype.model_class(), pk=object_id)
+    comments = []
+    if request.user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
+
+    for comment in comments_queryset.select_related("user"):
+        comments.append(comment) 
+
+    return render_to_response('generic/includes/subcomment.html', {
+       'comments_for_thread': comments, 
+    }, context_instance=RequestContext(request))
 
 def rating(request):
     """

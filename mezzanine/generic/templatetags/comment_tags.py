@@ -8,10 +8,15 @@ from mezzanine import template
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm
 from mezzanine.generic.models import ThreadedComment
+from mezzanine.blog.models import BlogPost
 
 from django.contrib.contenttypes.models import ContentType
 from voting.models import Vote
 from django.contrib.comments.models import Comment
+
+from django.core.urlresolvers import reverse
+from django.template import TemplateSyntaxError, Node, Variable
+from django.contrib.contenttypes.models import ContentType
 
 register = template.Library()
 
@@ -32,6 +37,19 @@ def comments_for(context, obj):
     context["object_for_comments"] = obj
     return context
 
+@register.inclusion_tag("generic/includes/comments.html", takes_context=True)
+def comments_for_review(context, obj):
+    """
+    Provides a generic context variable name for the object that
+    comments are being rendered for.
+    """
+    form = ThreadedCommentForm(context["request"], obj)
+    form.fields['comment'].label = "comment"
+    context["posted_comment_form"] = form
+    context["unposted_comment_form"] = form
+    context["comment_url"] = reverse("comment_on_review")
+    context["object_for_comments"] = obj
+    return context
 
 @register.inclusion_tag("generic/includes/comment.html", takes_context=True)
 def comment_thread(context, parent):
@@ -263,6 +281,20 @@ def recent_comments(context):
     context["comments"] = comments.order_by("-id")[:latest]
     return context
 
+@register.inclusion_tag("admin/includes/recent_comments.html",
+    takes_context=True)
+def recent_reviews(context):
+    """
+    Dashboard widget for displaying recent comments.
+    """
+    comments = []
+    latest = context["settings"].COMMENTS_NUM_LATEST
+    comments_queryset = ThreadedComment.objects.all()
+    for comment in comments_queryset.select_related("user"):
+        if isinstance(comment.content_object, BlogPost):
+            comments.append(comment) 
+    context["comments"] = comments
+    return context
 
 @register.filter
 def comment_filter(comment_text):
@@ -276,3 +308,31 @@ def comment_filter(comment_text):
     if not filter_func:
         filter_func = lambda s: linebreaksbr(urlize(s))
     return filter_func(comment_text)
+
+@register.filter
+def get_class_name(value):
+    return value.__class__.__name__
+
+@register.tag
+def comments_for_obj_url(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 2:
+        raise TemplateSyntaxError("Accepted format {% comments_for_obj_url [instance] %}")
+    else:
+        return CommentsForObjURL(bits[1])
+
+class CommentsForObjURL(Node):
+    def __init__(self, obj):
+        self.obj = Variable(obj)
+
+    def render(self, context):
+        obj_instance = self.obj.resolve(context)
+        content_type = ContentType.objects.get_for_model(obj_instance).pk
+        return reverse('fetch_comments_on_obj', kwargs={'content_type_id': content_type, 'object_id': obj_instance.pk })
+
+@register.inclusion_tag("generic/includes/render_comment.html", takes_context=True)
+def render_comment(context, comment):
+    context.update({
+        "comment": comment,
+    })
+    return context

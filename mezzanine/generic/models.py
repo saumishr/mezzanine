@@ -11,6 +11,7 @@ from mezzanine.core.models import Slugged, Orderable
 from mezzanine.conf import settings
 from mezzanine.utils.models import get_user_model_name
 from mezzanine.utils.sites import current_site_id
+from mezzanine.generic.fields import CommentsField
 
 
 class ThreadedComment(Comment):
@@ -25,13 +26,13 @@ class ThreadedComment(Comment):
 
     by_author = models.BooleanField(_("By the blog author"), default=False)
     replied_to = models.ForeignKey("self", null=True, editable=False,
-                                   related_name="comments")
+                                   related_name="repliedto")
     rating = RatingField(verbose_name=_("Rating"))
     bought_category = models.TextField(_("Bought"))
     
     rating_parameters = models.TextField(_("RatingParameters"), null=True)
     rating_parameter_values = models.TextField(_("RatingParameters_Value"), null=True)
-
+    comments = CommentsField(verbose_name=_("Comments"))
     objects = CommentManager()
 
     class Meta:
