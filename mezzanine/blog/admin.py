@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
+from django.forms import ValidationError
 
 from mezzanine.blog.models import BlogPost, BlogCategory
 from mezzanine.conf import settings
@@ -43,6 +44,11 @@ class BlogPostAdmin(DisplayableAdmin, OwnableAdmin):
         """
         Super class ordering is important here - user must get saved first.
         """
+        if not change:
+            blog_posts = BlogPost.objects.published(for_user=request.user).select_related().filter(user=request.user)
+            if blog_posts[0]:
+                raise ValidationError(_("'%s' has already registered a vendor page" % request.user))
+
         OwnableAdmin.save_form(self, request, form, change)
         return DisplayableAdmin.save_form(self, request, form, change)
 

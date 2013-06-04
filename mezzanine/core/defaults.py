@@ -78,7 +78,7 @@ register_setting(
 if "mezzanine.blog" in settings.INSTALLED_APPS:
     dashboard_tags = (
         ("blog_tags.quick_blog", "mezzanine_tags.app_list"),
-        ("comment_tags.recent_comments",),
+        (),
         ("mezzanine_tags.recent_actions",),
     )
 else:
