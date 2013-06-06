@@ -34,7 +34,8 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
                                  verbose_name=_("Related posts"), blank=True)
 
     admin_thumb_field = "featured_image"
-
+    num_images    = models.PositiveIntegerField(verbose_name="Photos Uploaded", default=0)
+    
     class Meta:
         verbose_name = _("Blog post")
         verbose_name_plural = _("Blog posts")
