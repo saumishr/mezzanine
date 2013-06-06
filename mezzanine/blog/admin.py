@@ -44,9 +44,9 @@ class BlogPostAdmin(DisplayableAdmin, OwnableAdmin):
         """
         Super class ordering is important here - user must get saved first.
         """
-        if not change:
+        if not change and not request.user.is_superuser:
             blog_posts = BlogPost.objects.published(for_user=request.user).select_related().filter(user=request.user)
-            if blog_posts[0]:
+            if blog_posts and blog_posts[0]:
                 raise ValidationError(_("'%s' has already registered a vendor page" % request.user))
 
         OwnableAdmin.save_form(self, request, form, change)
