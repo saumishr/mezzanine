@@ -38,6 +38,13 @@ def blog_categories(*args):
     categories = BlogCategory.objects.filter(blogposts__in=posts)
     return list(categories.annotate(post_count=Count("blogposts")))
 
+@register.as_tag
+def blog_categories_abs(*args):
+    """
+    Put a list of categories for blog posts into the template context.
+    """
+    categories = BlogCategory.objects.all()
+    return list(categories)
 
 @register.as_tag
 def blog_authors(*args):
