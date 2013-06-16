@@ -89,6 +89,15 @@ if generic_comments:
     )
 
     register_setting(
+        name="DEALS_NUM_LATEST",
+        label=_("Admin deals"),
+        description=_("Number of latest deals shown"),
+        editable=True,
+        default=10,
+    )
+
+
+    register_setting(
         name="COMMENTS_UNAPPROVED_VISIBLE",
         label=_("Show unapproved comments"),
         description=_("If ``True``, comments that have ``is_public`` "
