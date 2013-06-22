@@ -116,11 +116,6 @@ def comment(request, template="generic/comments.html"):
         return HttpResponse(dumps({"errors": form.errors}))
     # Show errors with stand-alone comment form.
     context = {"obj": obj, "posted_comment_form": form}
-    if obj.ratingParameters :
-        ratingParameters = obj.ratingParameters.split(',')
-        for ratingParameter in ratingParameters :
-            if post_data.get(ratingParameter + "_value") :
-                context[ratingParameter + "_value"] = post_data.get(ratingParameter + "_value")
     response = render(request, template, context)
     return response
 
