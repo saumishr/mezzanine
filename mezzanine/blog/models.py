@@ -19,11 +19,6 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
                                         blank=True, related_name="blogposts")
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"),
                                          default=True)
-    
-    allow_reply_to_comments = models.BooleanField(verbose_name=_("Allow Reply to Comments"),
-                                         default=True)
-    
-    ratingParameters = models.TextField(blank = True, verbose_name=_("Rating Parameters"), help_text=_("Enter parameters separated by comma"))
 
     comments = ReviewsField(verbose_name=_("Reviews"))
     rating = RatingField(verbose_name=_("Rating"))
