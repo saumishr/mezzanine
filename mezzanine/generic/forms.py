@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.conf import settings
 from mezzanine.core.forms import Html5Mixin
-from mezzanine.generic.models import Keyword, ThreadedComment, Rating
+from mezzanine.generic.models import Keyword, ThreadedComment, Rating, Review
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.email import split_addresses, send_mail_template
 from mezzanine.utils.views import ip_for_request
@@ -118,12 +118,6 @@ class ThreadedCommentForm(CommentForm, Html5Mixin):
                     value = user.email
             kwargs["initial"][field] = value
         super(ThreadedCommentForm, self).__init__(*args, **kwargs)
-        if args[0].__class__.__name__ == "BlogPost":
-            categories = args[0].categories.all() # get the list of categories from the post
-            CHOICES = [('', _("-Select-"))]
-            for category in categories:
-                CHOICES = CHOICES + [(str(category), str(category)) ]
-            self.fields['category'] = forms.ChoiceField(label = _("Bought a: "), help_text=_(""), choices=CHOICES, required=False)
 
     def get_comment_model(self):
         """
@@ -197,6 +191,94 @@ ThreadedCommentForm.base_fields.pop('url')
 ThreadedCommentForm.base_fields.pop('email')
 ThreadedCommentForm.base_fields.pop('name')
 
+class ReviewForm(ThreadedCommentForm, Html5Mixin):
+    """
+    Form for a Review. Subclasses ``ThreadedCommentForm``
+    """
+    price_value = forms.ChoiceField(label="Price", widget=forms.RadioSelect,
+                              choices=zip(*(settings.RATINGS_RANGE,) * 2))
+    variety_value = forms.ChoiceField(label="Variety", widget=forms.RadioSelect,
+                              choices=zip(*(settings.RATINGS_RANGE,) * 2))
+    quality_value = forms.ChoiceField(label="Quality", widget=forms.RadioSelect,
+                              choices=zip(*(settings.RATINGS_RANGE,) * 2))
+    service_value = forms.ChoiceField(label="Customer Service", widget=forms.RadioSelect,
+                              choices=zip(*(settings.RATINGS_RANGE,) * 2))
+    exchange_value = forms.ChoiceField(label="Exchange Experience", widget=forms.RadioSelect,
+                              choices=zip(*(settings.RATINGS_RANGE,) * 2), required=False)
+    
+    def save(self, request):
+        """
+        Saves a new comment and sends any notification emails.
+        """
+        post_data = request.POST
+        review = self.get_comment_object()
+        obj = review.content_object
+        if request.user.is_authenticated():
+            review.user = request.user
+            review.user_name = review.user.username
+        review.by_author = request.user == getattr(obj, "user", None)
+        review.ip_address = ip_for_request(request)
+        review.replied_to_id = self.data.get("replied_to")
+        if obj.__class__.__name__ == "BlogPost":
+            review.bought_category = post_data.get("category")
+            ratedParameters = ""
+            ratedValues = ""
+            if obj.ratingParameters :
+                ratingParameters = obj.ratingParameters.split(',')
+                for ratingParameter in ratingParameters :
+                    if post_data.get(ratingParameter + "_value") :
+                        ratedParameters += ratingParameter + ","
+                        ratedValues += post_data.get(ratingParameter + "_value") + ","
+            if ratedParameters != "" :
+                ratedParameters = ratedParameters[:-1]
+            if ratedValues != "" :
+                ratedValues = ratedValues[:-1]
+            review.rating_parameters = ratedParameters
+            review.rating_parameter_values = ratedValues
+        
+        if (post_data.get("price_value")):
+            review.price_value = post_data.get("price_value")
+        if (post_data.get("variety_value")):
+            review.variety_value = post_data.get("variety_value")
+        if (post_data.get("quality_value")):
+            review.quality_value = post_data.get("quality_value")
+        if (post_data.get("service_value")):
+            review.service_value = post_data.get("service_value")
+        if (post_data.get("exchange_value")):
+            review.exchange_value = post_data.get("exchange_value")
+
+        review.save()
+        comment_was_posted.send(sender=review.__class__, comment=review,
+                                request=request)
+        notify_emails = split_addresses(settings.COMMENTS_NOTIFICATION_EMAILS)
+        if notify_emails:
+            subject = _("New comment for: ") + unicode(obj)
+            context = {
+                "comment": review,
+                "comment_url": add_cache_bypass(comment.get_absolute_url()),
+                "request": request,
+                "obj": obj,
+            }
+            send_mail_template(subject, "email/comment_notification",
+                               settings.DEFAULT_FROM_EMAIL, notify_emails,
+                               context, fail_silently=settings.DEBUG)
+        return review
+        
+    def get_comment_model(self):
+        """
+        Use the custom comment model instead of the built-in one.
+        """
+        return Review
+        
+    def __init__(self, request, *args, **kwargs):
+        super(ReviewForm, self).__init__(request, *args, **kwargs)
+        if args[0].__class__.__name__ == "BlogPost":
+            categories = args[0].categories.all() # get the list of categories from the post
+            CHOICES = [('', _("-Select-"))]
+            for category in categories:
+                CHOICES = CHOICES + [(str(category), str(category)) ]
+            self.fields['category'] = forms.ChoiceField(label = _("Bought a: "), help_text=_(""), choices=CHOICES)
+        
 class RatingForm(CommentSecurityForm):
     """
     Form for a rating. Subclasses ``CommentSecurityForm`` to make use

@@ -12,7 +12,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 
 from mezzanine.conf import settings
-from mezzanine.generic.forms import ThreadedCommentForm, RatingForm
+from mezzanine.generic.forms import ThreadedCommentForm, RatingForm, ReviewForm
 from mezzanine.generic.models import Keyword
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.views import render, set_cookie, is_spam
@@ -88,14 +88,14 @@ def initial_validation(request, prefix):
 
 def comment(request, template="generic/comments.html"):
     """
-    Handle a ``ThreadedCommentForm`` submission and redirect back to its
+    Handle a ``ReviewForm`` submission and redirect back to its
     related object.
     """
     response = initial_validation(request, "comment")
     if isinstance(response, HttpResponse):
         return response
     obj, post_data = response
-    form = ThreadedCommentForm(request, obj, post_data)
+    form = ReviewForm(request, obj, post_data)
     if form.is_valid():
         url = obj.get_absolute_url()
         if is_spam(request, form, url):
@@ -103,8 +103,8 @@ def comment(request, template="generic/comments.html"):
         comment = form.save(request)
         response = redirect(add_cache_bypass(comment.get_absolute_url()))
         # Store commenter's details in a cookie for 90 days.
-        for field in ThreadedCommentForm.cookie_fields:
-            cookie_name = ThreadedCommentForm.cookie_prefix + field
+        for field in ReviewForm.cookie_fields:
+            cookie_name = ReviewForm.cookie_prefix + field
             cookie_value = post_data.get(field, "")
             set_cookie(response, cookie_name, cookie_value)
         """
@@ -216,7 +216,7 @@ def comment_thread_most_liked_view(request, obj, template="generic/includes/comm
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
-    form = ThreadedCommentForm(request, parent)
+    form = ReviewForm(request, parent)
     try:
         context["posted_comment_form"]
     except KeyError:
@@ -237,7 +237,7 @@ def comment_thread_most_recent_view(request, obj, template="generic/includes/com
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
-    form = ThreadedCommentForm(request, parent)
+    form = ReviewForm(request, parent)
     try:
         context["posted_comment_form"]
     except KeyError:
@@ -255,11 +255,11 @@ def comment_thread_default_view(request, obj, template="generic/includes/comment
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ThreadedCommentForm
+    from mezzanine.generic.forms import ReviewForm
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
-    form = ThreadedCommentForm(request, parent)
+    form = ReviewForm(request, parent)
     try:
         context["posted_comment_form"]
     except KeyError:
@@ -280,7 +280,7 @@ def comment_thread_social_view(request, obj, template="generic/includes/comments
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
-    form = ThreadedCommentForm(request, parent)
+    form = ReviewForm(request, parent)
     try:
         context["posted_comment_form"]
     except KeyError:
@@ -301,7 +301,7 @@ def comment_thread_social_view_level2(request, obj, template="generic/includes/c
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
-    form = ThreadedCommentForm(request, parent)
+    form = ReviewForm(request, parent)
     try:
         context["posted_comment_form"]
     except KeyError:

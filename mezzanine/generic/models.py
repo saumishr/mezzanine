@@ -93,6 +93,16 @@ class ThreadedComment(Comment):
     def email_hash(self):
         return self.email
 
+class Review(ThreadedComment):
+    price_value = models.IntegerField(_("Price"))
+    variety_value = models.IntegerField(_("Variety"))
+    quality_value = models.IntegerField(_("Quality"))
+    service_value = models.IntegerField(_("Customer Service"))
+    exchange_value = models.IntegerField(_("Exchange Experience"), null = True)
+    
+    class Meta:
+        verbose_name = _("Review")
+        verbose_name_plural = _("Review")
 
 class Keyword(Slugged):
     """
