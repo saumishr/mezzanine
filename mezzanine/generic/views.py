@@ -212,7 +212,7 @@ def comment_thread_most_liked_view(request, obj, template="generic/includes/comm
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ThreadedCommentForm
+    from mezzanine.generic.forms import ReviewForm
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
@@ -233,7 +233,7 @@ def comment_thread_most_recent_view(request, obj, template="generic/includes/com
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ThreadedCommentForm
+    from mezzanine.generic.forms import ReviewForm
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
@@ -276,7 +276,7 @@ def comment_thread_social_view(request, obj, template="generic/includes/comments
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ThreadedCommentForm
+    from mezzanine.generic.forms import ReviewForm
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
@@ -297,7 +297,7 @@ def comment_thread_social_view_level2(request, obj, template="generic/includes/c
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ThreadedCommentForm
+    from mezzanine.generic.forms import ReviewForm
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)

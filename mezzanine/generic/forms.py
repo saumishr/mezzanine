@@ -137,22 +137,6 @@ class ThreadedCommentForm(CommentForm, Html5Mixin):
         comment.by_author = request.user == getattr(obj, "user", None)
         comment.ip_address = ip_for_request(request)
         comment.replied_to_id = self.data.get("replied_to")
-        if obj.__class__.__name__ == "BlogPost":
-            comment.bought_category = post_data.get("category")
-            ratedParameters = ""
-            ratedValues = ""
-            if obj.ratingParameters :
-                ratingParameters = obj.ratingParameters.split(',')
-                for ratingParameter in ratingParameters :
-                    if post_data.get(ratingParameter + "_value") :
-                        ratedParameters += ratingParameter + ","
-                        ratedValues += post_data.get(ratingParameter + "_value") + ","
-            if ratedParameters != "" :
-                ratedParameters = ratedParameters[:-1]
-            if ratedValues != "" :
-                ratedValues = ratedValues[:-1]
-            comment.rating_parameters = ratedParameters
-            comment.rating_parameter_values = ratedValues
 
         comment.save()
         comment_was_posted.send(sender=comment.__class__, comment=comment,
@@ -221,21 +205,7 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         review.replied_to_id = self.data.get("replied_to")
         if obj.__class__.__name__ == "BlogPost":
             review.bought_category = post_data.get("category")
-            ratedParameters = ""
-            ratedValues = ""
-            if obj.ratingParameters :
-                ratingParameters = obj.ratingParameters.split(',')
-                for ratingParameter in ratingParameters :
-                    if post_data.get(ratingParameter + "_value") :
-                        ratedParameters += ratingParameter + ","
-                        ratedValues += post_data.get(ratingParameter + "_value") + ","
-            if ratedParameters != "" :
-                ratedParameters = ratedParameters[:-1]
-            if ratedValues != "" :
-                ratedValues = ratedValues[:-1]
-            review.rating_parameters = ratedParameters
-            review.rating_parameter_values = ratedValues
-        
+
         if (post_data.get("price_value")):
             review.price_value = post_data.get("price_value")
         if (post_data.get("variety_value")):

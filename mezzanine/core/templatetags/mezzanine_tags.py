@@ -106,31 +106,6 @@ def fields_for(context, form):
     context["form_for_fields"] = form
     return context
 
-@register.inclusion_tag("includes/comment_form_fields.html", takes_context=True)
-def fields_for_comment(context, form):
-    """
-    Renders fields for a Comment form.
-    """
-    context["form_for_fields"] = form
-    
-    blogPost = context["object_for_comments"]
-    if blogPost and blogPost.ratingParameters != "":
-        fields = []
-        ratingParameters = blogPost.ratingParameters.split(",")
-        for ratingParameter in ratingParameters:
-            text = ratingParameter + ':&nbsp;&nbsp;'
-            for i in range (1,6) :
-                val = str(i)
-                text += '<label for="id_' + ratingParameter + '_' + val + '"><input id="id_' + ratingParameter + '_ '+ val + '" type="radio" value="' + val + '" name="' + ratingParameter + '_value"'
-                inDict = context.get(ratingParameter + "_value" , -1)
-                if inDict == val :
-                     text += 'checked="checked"'
-                text += '/>&nbsp;' + val + '</label>'
-            fields.append(text)
-        context["fields"] = fields 
-    return context
-
-
 @register.filter
 def sort_by(items, attr):
     """
