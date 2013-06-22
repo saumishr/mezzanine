@@ -148,6 +148,29 @@ class CommentsField(BaseGenericRelation):
         setattr(instance, count_field_name, count)
         instance.save()
 
+class ReviewsField(BaseGenericRelation):
+    """
+    Stores the number of comments against the
+    ``COMMENTS_FIELD_NAME_count`` field when a comment is saved or
+    deleted.
+    """
+
+    related_model = "generic.Review"
+    fields = {"%s_count": IntegerField(editable=False, default=0)}
+
+    def related_items_changed(self, instance, related_manager):
+        """
+        Stores the number of comments. A custom ``count_filter``
+        queryset gets checked for, allowing managers to implement
+        custom count logic.
+        """
+        try:
+            count = related_manager.count_queryset()
+        except AttributeError:
+            count = related_manager.count()
+        count_field_name = self.fields.keys()[0] % self.related_field_name
+        setattr(instance, count_field_name, count)
+        instance.save()
 
 class KeywordsField(BaseGenericRelation):
     """
