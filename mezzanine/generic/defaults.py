@@ -24,7 +24,14 @@ if generic_comments:
         label=_("Accounts required for commenting"),
         description=_("If ``True``, users must log in to comment."),
         editable=True,
-        default=False,
+        default=True,
+    )
+    register_setting(
+        name="COMMENT_ON_REVIEWS_ACCOUNT_REQUIRED",
+        label=_("Accounts required for commenting"),
+        description=_("If ``True``, users must log in to comment."),
+        editable=True,
+        default=True,
     )
 
     register_setting(

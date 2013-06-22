@@ -90,6 +90,8 @@ class Review(ThreadedComment):
     exchange_value = models.IntegerField(_("Exchange Experience"), null = True)
     bought_category = models.TextField(_("Bought"))
     
+    objects = CommentManager()
+    
     class Meta:
         verbose_name = _("Review")
         verbose_name_plural = _("Review")

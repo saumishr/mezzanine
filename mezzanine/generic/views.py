@@ -110,17 +110,13 @@ def comment(request, template="generic/comments.html"):
         """
             Send activity feed to those who follow this vendor page.
         """
-        action.send(obj, verb=u'has got a new review from', action_object=comment, target=request.user)
+        if request.user.is_authenticated():
+            action.send(obj, verb=u'has got a new review from', action_object=comment, target=request.user)
         return response
     elif request.is_ajax() and form.errors:
         return HttpResponse(dumps({"errors": form.errors}))
     # Show errors with stand-alone comment form.
     context = {"obj": obj, "posted_comment_form": form}
-    if obj.ratingParameters :
-        ratingParameters = obj.ratingParameters.split(',')
-        for ratingParameter in ratingParameters :
-            if post_data.get(ratingParameter + "_value") :
-                context[ratingParameter + "_value"] = post_data.get(ratingParameter + "_value")
     response = render(request, template, context)
     return response
 
@@ -132,7 +128,7 @@ def comment_on_review(request, template="generic/comments.html"):
     related object.
     """
 
-    response = initial_validation(request, "comment")
+    response = initial_validation(request, "comment_on_review")
     if isinstance(response, HttpResponse):
         return response
     obj, post_data = response
