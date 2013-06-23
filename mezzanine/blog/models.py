@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from mezzanine.conf import settings
 from mezzanine.core.fields import FileField
 from mezzanine.core.models import Displayable, Ownable, RichText, Slugged
-from mezzanine.generic.fields import CommentsField, RatingField, ReviewsField
+from mezzanine.generic.fields import CommentsField, RatingField, ReviewsField, RequiredReviewRatingField, OptionalReviewRatingField
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 from django.db import models
 from follow import utils
@@ -22,6 +22,8 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
 
     comments = ReviewsField(verbose_name=_("Reviews"))
     rating = RatingField(verbose_name=_("Rating"))
+    requiredreviewrating = RequiredReviewRatingField(verbose_name=_("RequiredReviewRating"))
+    optionalreviewrating = OptionalReviewRatingField(verbose_name=_("OptionalReviewRating"))
     featured_image = FileField(verbose_name=_("Featured Image"),
         upload_to=upload_to("blog.BlogPost.featured_image", "blog"),
         format="Image", max_length=255, null=True, blank=True)
