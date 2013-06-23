@@ -142,7 +142,8 @@ class RequiredReviewRating(models.Model):
     content_object = GenericForeignKey("content_type", "object_pk")
     user = models.ForeignKey(get_user_model_name(), verbose_name=_("Required Rater"),
         null=True, related_name="%(class)ss")
-
+    commentid = models.PositiveIntegerField(_("Comment Id"))
+    
     class Meta:
         verbose_name = _("RequiredReviewRating")
         verbose_name_plural = _("RequiredReviewRatings")
@@ -179,6 +180,7 @@ class OptionalReviewRating(models.Model):
     content_object = GenericForeignKey("content_type", "object_pk")
     user = models.ForeignKey(get_user_model_name(), verbose_name=_("Optional Rater"),
         null=True, related_name="%(class)ss")
+    commentid = models.PositiveIntegerField(_("Comment Id"))
 
     class Meta:
         verbose_name = _("OptionalReviewRating")
