@@ -211,26 +211,15 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         optionalreviewrating_name = obj.get_optionalreviewratingfield_name()
         optionalreviewrating_manager = getattr(obj, optionalreviewrating_name)
         
-        userRequiredRating = True
-        userOptionalRating = True
-        
-        try:
-            requiredreviewrating_instance = requiredreviewrating_manager.get(user=request.user)
-        except RequiredReviewRating.DoesNotExist:
-                userRequiredRating = False
-                if request.user.is_authenticated():
-                    requiredreviewrating_instance = RequiredReviewRating(user=request.user)
-                else:
-                    requiredreviewrating_instance = RequiredReviewRating()
+        if request.user.is_authenticated():
+            requiredreviewrating_instance = RequiredReviewRating(user=request.user)
+        else:
+            requiredreviewrating_instance = RequiredReviewRating()
 
-        try:
-            optionalreviewrating_instance = optionalreviewrating_manager.get(user=request.user)
-        except OptionalReviewRating.DoesNotExist:
-                userOptionalRating = False
-                if request.user.is_authenticated():
-                    optionalreviewrating_instance = OptionalReviewRating(user=request.user)
-                else:
-                    optionalreviewrating_instance = OptionalReviewRating()
+        if request.user.is_authenticated():
+            optionalreviewrating_instance = OptionalReviewRating(user=request.user)
+        else:
+            optionalreviewrating_instance = OptionalReviewRating()
 
         if (post_data.get("price_value")):
             review.price_value = post_data.get("price_value")
@@ -248,17 +237,17 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
             review.exchange_value = post_data.get("exchange_value")
             optionalreviewrating_instance.exchange_value = review.exchange_value
 
-        if not userRequiredRating:
-            requiredreviewrating_manager.add(requiredreviewrating_instance)
-        else:
-            requiredreviewrating_instance.save()
-            
-        if not userOptionalRating and post_data.get("exchange_value"):
-            optionalreviewrating_manager.add(optionalreviewrating_instance)
-        else:
-            optionalreviewrating_instance.save()
-
         review.save()
+        
+        # the primary key for review will be generated when it is saved
+        # and the reviewrating will need to store that primary key
+        requiredreviewrating_instance.commentid = review.pk
+        optionalreviewrating_instance.commentid = review.pk
+        
+        requiredreviewrating_manager.add(requiredreviewrating_instance)
+            
+        if post_data.get("exchange_value"):
+            optionalreviewrating_manager.add(optionalreviewrating_instance)
         
         comment_was_posted.send(sender=review.__class__, comment=review,
                                 request=request)
