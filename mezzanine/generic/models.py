@@ -126,7 +126,73 @@ class AssignedKeyword(Orderable):
     def __unicode__(self):
         return unicode(self.keyword)
 
+class RequiredReviewRating(models.Model):
+    """
+    A rating that can be given to a piece of content.
+    """
 
+    price_value = models.IntegerField(_("Price Value"))
+    variety_value = models.IntegerField(_("Variety Value"))
+    quality_value = models.IntegerField(_("Quality Value"))
+    service_value = models.IntegerField(_("Service Value"))
+    rating_date = models.DateTimeField(_("Required Review Rating date"),
+        auto_now_add=True, null=True)
+    content_type = models.ForeignKey("contenttypes.ContentType")
+    object_pk = models.IntegerField()
+    content_object = GenericForeignKey("content_type", "object_pk")
+    user = models.ForeignKey(get_user_model_name(), verbose_name=_("Required Rater"),
+        null=True, related_name="%(class)ss")
+
+    class Meta:
+        verbose_name = _("RequiredReviewRating")
+        verbose_name_plural = _("RequiredReviewRatings")
+
+    def save(self, *args, **kwargs):
+        """
+        Validate that the rating falls between the min and max values.
+        """
+        valid = map(str, settings.RATINGS_RANGE)
+        if str(self.price_value) not in valid:
+            raise ValueError("Invalid rating. %s is not in %s" % (self.price_value,
+                ", ".join(valid)))
+        if str(self.variety_value) not in valid:
+            raise ValueError("Invalid rating. %s is not in %s" % (self.variety_value,
+                ", ".join(valid)))
+        if str(self.quality_value) not in valid:
+            raise ValueError("Invalid rating. %s is not in %s" % (self.quality_value,
+                ", ".join(valid)))
+        if str(self.service_value) not in valid:
+            raise ValueError("Invalid rating. %s is not in %s" % (self.service_value,
+                ", ".join(valid)))
+        super(RequiredReviewRating, self).save(*args, **kwargs)
+
+class OptionalReviewRating(models.Model):
+    """
+    A rating that can be given to a piece of content.
+    """
+
+    exchange_value = models.IntegerField(_("Exchange Value"))
+    rating_date = models.DateTimeField(_("Optional Review Rating date"),
+        auto_now_add=True, null=True)
+    content_type = models.ForeignKey("contenttypes.ContentType")
+    object_pk = models.IntegerField()
+    content_object = GenericForeignKey("content_type", "object_pk")
+    user = models.ForeignKey(get_user_model_name(), verbose_name=_("Optional Rater"),
+        null=True, related_name="%(class)ss")
+
+    class Meta:
+        verbose_name = _("OptionalReviewRating")
+        verbose_name_plural = _("OptionalReviewRatings")
+
+    def save(self, *args, **kwargs):
+        """
+        Validate that the rating falls between the min and max values.
+        """
+        valid = map(str, settings.RATINGS_RANGE)
+        if str(self.exchange_value) not in valid:
+            raise ValueError("Invalid rating. %s is not in %s" % (self.exchange_value,
+                ", ".join(valid)))
+        super(OptionalReviewRating, self).save(*args, **kwargs)
 
 class Rating(models.Model):
     """

@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.conf import settings
 from mezzanine.core.forms import Html5Mixin
-from mezzanine.generic.models import Keyword, ThreadedComment, Rating, Review
+from mezzanine.generic.models import Keyword, ThreadedComment, Rating, Review, RequiredReviewRating, OptionalReviewRating
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.email import split_addresses, send_mail_template
 from mezzanine.utils.views import ip_for_request
@@ -206,18 +206,60 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         if obj.__class__.__name__ == "BlogPost":
             review.bought_category = post_data.get("category")
 
+        requiredreviewrating_name = obj.get_requiredreviewratingfield_name()
+        requiredreviewrating_manager = getattr(obj, requiredreviewrating_name)
+        optionalreviewrating_name = obj.get_optionalreviewratingfield_name()
+        optionalreviewrating_manager = getattr(obj, optionalreviewrating_name)
+        
+        userRequiredRating = True
+        userOptionalRating = True
+        
+        try:
+            requiredreviewrating_instance = requiredreviewrating_manager.get(user=request.user)
+        except RequiredReviewRating.DoesNotExist:
+                userRequiredRating = False
+                if request.user.is_authenticated():
+                    requiredreviewrating_instance = RequiredReviewRating(user=request.user)
+                else:
+                    requiredreviewrating_instance = RequiredReviewRating()
+
+        try:
+            optionalreviewrating_instance = optionalreviewrating_manager.get(user=request.user)
+        except OptionalReviewRating.DoesNotExist:
+                userOptionalRating = False
+                if request.user.is_authenticated():
+                    optionalreviewrating_instance = OptionalReviewRating(user=request.user)
+                else:
+                    optionalreviewrating_instance = OptionalReviewRating()
+
         if (post_data.get("price_value")):
             review.price_value = post_data.get("price_value")
+            requiredreviewrating_instance.price_value = review.price_value
         if (post_data.get("variety_value")):
             review.variety_value = post_data.get("variety_value")
+            requiredreviewrating_instance.variety_value = review.variety_value
         if (post_data.get("quality_value")):
             review.quality_value = post_data.get("quality_value")
+            requiredreviewrating_instance.quality_value = review.quality_value
         if (post_data.get("service_value")):
             review.service_value = post_data.get("service_value")
+            requiredreviewrating_instance.service_value = review.service_value
         if (post_data.get("exchange_value")):
             review.exchange_value = post_data.get("exchange_value")
+            optionalreviewrating_instance.exchange_value = review.exchange_value
+
+        if not userRequiredRating:
+            requiredreviewrating_manager.add(requiredreviewrating_instance)
+        else:
+            requiredreviewrating_instance.save()
+            
+        if not userOptionalRating and post_data.get("exchange_value"):
+            optionalreviewrating_manager.add(optionalreviewrating_instance)
+        else:
+            optionalreviewrating_instance.save()
 
         review.save()
+        
         comment_was_posted.send(sender=review.__class__, comment=review,
                                 request=request)
         notify_emails = split_addresses(settings.COMMENTS_NOTIFICATION_EMAILS)

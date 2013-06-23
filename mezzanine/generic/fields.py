@@ -260,6 +260,85 @@ class KeywordsField(BaseGenericRelation):
             setattr(instance, string_field_name, keywords)
             instance.save()
 
+class RequiredReviewRatingField(BaseGenericRelation):
+    related_model = "generic.RequiredReviewRating"
+    fields = {"price_count": IntegerField(default=0, editable=False),
+              "price_sum": IntegerField(default=0, editable=False),
+              "price_average": FloatField(default=0, editable=False),
+              "variety_count": IntegerField(default=0, editable=False),
+              "variety_sum": IntegerField(default=0, editable=False),
+              "variety_average": FloatField(default=0, editable=False),
+              "quality_count": IntegerField(default=0, editable=False),
+              "quality_sum": IntegerField(default=0, editable=False),
+              "quality_average": FloatField(default=0, editable=False),
+              "service_count": IntegerField(default=0, editable=False),
+              "service_sum": IntegerField(default=0, editable=False),
+              "service_average": FloatField(default=0, editable=False),
+              }
+
+    def related_items_changed(self, instance, related_manager):
+        """
+        Calculates and saves the average rating.
+        """
+        price_ratings = []
+        variety_ratings = []
+        quality_ratings = []
+        service_ratings = []
+        for r in related_manager.all():
+            price_ratings.append(r.price_value)
+            variety_ratings.append(r.variety_value)
+            quality_ratings.append(r.quality_value)
+            service_ratings.append(r.service_value)
+        price_count     =   len(price_ratings)
+        price_sum       =   sum(price_ratings)
+        price_average   =   price_sum / float(price_count) if price_count > 0 else 0
+        variety_count   =   len(variety_ratings)
+        variety_sum     =   sum(variety_ratings)
+        variety_average =   variety_sum / float(variety_count) if variety_count > 0 else 0
+        quality_count   =   len(quality_ratings)
+        quality_sum     =   sum(quality_ratings)
+        quality_average =   quality_sum / float(quality_count) if quality_count > 0 else 0
+        service_count   =   len(service_ratings)
+        service_sum     =   sum(service_ratings)
+        service_average =   service_sum / float(service_count) if service_count > 0 else 0
+        setattr(instance, "price_count", price_count)
+        setattr(instance, "price_sum", price_sum)
+        setattr(instance, "price_average", price_average)
+        setattr(instance, "variety_count", variety_count)
+        setattr(instance, "variety_sum", variety_sum)
+        setattr(instance, "variety_average", variety_average)
+        setattr(instance, "quality_count", quality_count)
+        setattr(instance, "quality_sum", quality_sum)
+        setattr(instance, "quality_average", quality_average)
+        setattr(instance, "service_count", service_count)
+        setattr(instance, "service_sum", service_sum)
+        setattr(instance, "service_average", service_average)
+        instance.save()
+
+class OptionalReviewRatingField(BaseGenericRelation):
+    """
+    Stores the rating count and average against the
+    ``RATING_FIELD_NAME_count`` and ``RATING_FIELD_NAME_average``
+    fields when a rating is saved or deleted.
+    """
+
+    related_model = "generic.OptionalReviewRating"
+    fields = {"exchange_count": IntegerField(default=0, editable=False),
+              "exchange_sum": IntegerField(default=0, editable=False),
+              "exchange_average": FloatField(default=0, editable=False)}
+
+    def related_items_changed(self, instance, related_manager):
+        """
+        Calculates and saves the average rating.
+        """
+        exchange_ratings = [r.exchange_value for r in related_manager.all()]
+        exchange_count = len(exchange_ratings)
+        exchange_sum = sum(exchange_ratings)
+        exchange_average = exchange_sum / float(exchange_count) if exchange_count > 0 else 0
+        setattr(instance, "exchange_count", exchange_count)
+        setattr(instance, "exchange_sum", exchange_sum)
+        setattr(instance, "exchange_average", exchange_average)
+        instance.save()
 
 class RatingField(BaseGenericRelation):
     """
