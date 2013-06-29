@@ -96,6 +96,15 @@ if generic_comments:
     )
 
     register_setting(
+        name="REVIEWS_NUM_LATEST",
+        label=_("Admin comments"),
+        description=_("Number of latest comments shown in the admin "
+                      "dashboard."),
+        editable=True,
+        default=10,
+    )
+
+    register_setting(
         name="DEALS_NUM_LATEST",
         label=_("Admin deals"),
         description=_("Number of latest deals shown"),
