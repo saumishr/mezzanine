@@ -94,6 +94,13 @@ def edit(request):
         response = form.errors.values()[0][0]
     return HttpResponse(unicode(response))
 
+def searchComparator(object1, object2):
+    if (object1.overall_average < object2.overall_average):
+        return -1
+    elif (object1.overall_average == object2.overall_average):
+        return -1
+    else:
+        return 1
 
 def search(request, template="search_results.html"):
     """
@@ -115,6 +122,7 @@ def search(request, template="search_results.html"):
     else:
         search_type = search_model._meta.verbose_name_plural.capitalize()
     results = search_model.objects.search(query, for_user=request.user)
+    results.sort(searchComparator, reverse=True)
     paginated = paginate(results, page, per_page, max_paging_links)
     context = {"query": query, "results": paginated,
                "search_type": search_type}
