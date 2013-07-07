@@ -179,6 +179,8 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
     """
     Form for a Review. Subclasses ``ThreadedCommentForm``
     """
+    overall_value = forms.ChoiceField(label="Overall", widget=forms.RadioSelect,
+                              choices=zip(*(settings.RATINGS_RANGE,) * 2))
     price_value = forms.ChoiceField(label="Price", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
     variety_value = forms.ChoiceField(label="Variety", widget=forms.RadioSelect,
@@ -221,6 +223,9 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         else:
             optionalreviewrating_instance = OptionalReviewRating()
 
+        if (post_data.get("overall_value")):
+            review.overall_value = post_data.get("overall_value")
+            requiredreviewrating_instance.overall_value = review.overall_value
         if (post_data.get("price_value")):
             review.price_value = post_data.get("price_value")
             requiredreviewrating_instance.price_value = review.price_value
@@ -241,12 +246,11 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         
         # the primary key for review will be generated when it is saved
         # and the reviewrating will need to store that primary key
-        requiredreviewrating_instance.commentid = review.pk
-        optionalreviewrating_instance.commentid = review.pk
-        
+        requiredreviewrating_instance.commentid = review.pk        
         requiredreviewrating_manager.add(requiredreviewrating_instance)
             
         if post_data.get("exchange_value"):
+            optionalreviewrating_instance.commentid = review.pk
             optionalreviewrating_manager.add(optionalreviewrating_instance)
         
         comment_was_posted.send(sender=review.__class__, comment=review,

@@ -274,6 +274,14 @@ class RequiredReviewRatingField(BaseGenericRelation):
               "service_count": IntegerField(default=0, editable=False),
               "service_sum": IntegerField(default=0, editable=False),
               "service_average": FloatField(default=0, editable=False),
+              "overall_count": IntegerField(default=0, editable=False),
+              "overall_sum": IntegerField(default=0, editable=False),
+              "overall_average": FloatField(default=0, editable=False),
+              "overall_excellentR": IntegerField(default=0, editable=False),
+              "overall_verygoodR": IntegerField(default=0, editable=False),
+              "overall_averageR": IntegerField(default=0, editable=False),
+              "overall_poorR": IntegerField(default=0, editable=False),
+              "overall_terribleR": IntegerField(default=0, editable=False),
               }
 
     def related_items_changed(self, instance, related_manager):
@@ -284,7 +292,24 @@ class RequiredReviewRatingField(BaseGenericRelation):
         variety_ratings = []
         quality_ratings = []
         service_ratings = []
+        overall_ratings = []
+        overall_excellentR = 0
+        overall_verygoodR = 0
+        overall_averageR = 0
+        overall_poorR = 0
+        overall_terribleR = 0
         for r in related_manager.all():
+            overall_ratings.append(r.overall_value)
+            if r.overall_value == 5:
+                overall_excellentR = overall_excellentR + 1
+            if r.overall_value == 4:
+                overall_verygoodR = overall_verygoodR + 1
+            if r.overall_value == 3:
+                overall_averageR = overall_averageR + 1
+            if r.overall_value == 2:
+                overall_poorR = overall_poorR + 1
+            if r.overall_value == 1:
+                overall_terribleR = overall_terribleR + 1
             price_ratings.append(r.price_value)
             variety_ratings.append(r.variety_value)
             quality_ratings.append(r.quality_value)
@@ -301,6 +326,9 @@ class RequiredReviewRatingField(BaseGenericRelation):
         service_count   =   len(service_ratings)
         service_sum     =   sum(service_ratings)
         service_average =   service_sum / float(service_count) if service_count > 0 else 0
+        overall_count   =   len(overall_ratings)
+        overall_sum     =   sum(overall_ratings)
+        overall_average =   overall_sum / float(overall_count) if overall_count > 0 else 0
         setattr(instance, "price_count", price_count)
         setattr(instance, "price_sum", price_sum)
         setattr(instance, "price_average", price_average)
@@ -313,6 +341,14 @@ class RequiredReviewRatingField(BaseGenericRelation):
         setattr(instance, "service_count", service_count)
         setattr(instance, "service_sum", service_sum)
         setattr(instance, "service_average", service_average)
+        setattr(instance, "overall_count", overall_count)
+        setattr(instance, "overall_sum", overall_sum)
+        setattr(instance, "overall_average", overall_average)
+        setattr(instance, "overall_excellentR", overall_excellentR)
+        setattr(instance, "overall_verygoodR", overall_verygoodR)
+        setattr(instance, "overall_averageR", overall_averageR)
+        setattr(instance, "overall_poorR", overall_poorR)
+        setattr(instance, "overall_terribleR", overall_terribleR)
         instance.save()
 
 class OptionalReviewRatingField(BaseGenericRelation):
