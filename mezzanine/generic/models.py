@@ -83,6 +83,7 @@ class ThreadedComment(Comment):
         return self.email
 
 class Review(ThreadedComment):
+    overall_value = models.IntegerField(_("Overall"))
     price_value = models.IntegerField(_("Price"))
     variety_value = models.IntegerField(_("Variety"))
     quality_value = models.IntegerField(_("Quality"))
@@ -130,7 +131,7 @@ class RequiredReviewRating(models.Model):
     """
     A rating that can be given to a piece of content.
     """
-
+    overall_value = models.IntegerField(_("Overall Value"))
     price_value = models.IntegerField(_("Price Value"))
     variety_value = models.IntegerField(_("Variety Value"))
     quality_value = models.IntegerField(_("Quality Value"))
@@ -153,17 +154,20 @@ class RequiredReviewRating(models.Model):
         Validate that the rating falls between the min and max values.
         """
         valid = map(str, settings.RATINGS_RANGE)
+        if str(self.overall_value) not in valid:
+            raise ValueError("Invalid Overall rating. %s is not in %s" % (self.overall_value,
+                ", ".join(valid)))
         if str(self.price_value) not in valid:
-            raise ValueError("Invalid rating. %s is not in %s" % (self.price_value,
+            raise ValueError("Invalid Price rating. %s is not in %s" % (self.price_value,
                 ", ".join(valid)))
         if str(self.variety_value) not in valid:
-            raise ValueError("Invalid rating. %s is not in %s" % (self.variety_value,
+            raise ValueError("Invalid Variety rating. %s is not in %s" % (self.variety_value,
                 ", ".join(valid)))
         if str(self.quality_value) not in valid:
-            raise ValueError("Invalid rating. %s is not in %s" % (self.quality_value,
+            raise ValueError("Invalid Quality rating. %s is not in %s" % (self.quality_value,
                 ", ".join(valid)))
         if str(self.service_value) not in valid:
-            raise ValueError("Invalid rating. %s is not in %s" % (self.service_value,
+            raise ValueError("Invalid Service rating. %s is not in %s" % (self.service_value,
                 ", ".join(valid)))
         super(RequiredReviewRating, self).save(*args, **kwargs)
 
@@ -192,7 +196,7 @@ class OptionalReviewRating(models.Model):
         """
         valid = map(str, settings.RATINGS_RANGE)
         if str(self.exchange_value) not in valid:
-            raise ValueError("Invalid rating. %s is not in %s" % (self.exchange_value,
+            raise ValueError("Invalid Exchange rating. %s is not in %s" % (self.exchange_value,
                 ", ".join(valid)))
         super(OptionalReviewRating, self).save(*args, **kwargs)
 
