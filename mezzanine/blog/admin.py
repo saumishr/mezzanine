@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.forms import ValidationError
 
-from mezzanine.blog.models import BlogPost, BlogCategory
+from mezzanine.blog.models import BlogPost, BlogCategory, BlogParentCategory
 from mezzanine.conf import settings
 from mezzanine.core.admin import DisplayableAdmin, OwnableAdmin
 from django.utils.translation import ugettext_lazy as _
@@ -54,7 +54,7 @@ class BlogCategoryAdmin(admin.ModelAdmin):
     unless explicitly specified.
     """
 
-    fieldsets = ((None, {"fields": ("title",)}),)
+    fieldsets = ((None, {"fields": ("title","parent_category",)}),)
 
     def in_menu(self):
         """
@@ -65,6 +65,24 @@ class BlogCategoryAdmin(admin.ModelAdmin):
                 return True
         return False
 
+class BlogParentCategoryAdmin(admin.ModelAdmin):
+    """
+    Admin class for blog categories. Hides itself from the admin menu
+    unless explicitly specified.
+    """
+
+    fieldsets = ((None, {"fields": ("title",)}),)
+
+    def in_menu(self):
+        """
+        Hide from the admin menu unless explicitly set in ``ADMIN_MENU_ORDER``.
+        """
+        for (name, items) in settings.ADMIN_MENU_ORDER:
+            if "blog.BlogParentCategory" in items:
+                return True
+        return False
 
 admin.site.register(BlogPost, BlogPostAdmin)
 admin.site.register(BlogCategory, BlogCategoryAdmin)
+admin.site.register(BlogParentCategory, BlogParentCategoryAdmin)
+

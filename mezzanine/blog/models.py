@@ -17,6 +17,7 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
     categories = models.ManyToManyField("BlogCategory",
                                         verbose_name=_("Categories"),
                                         blank=True, related_name="blogposts")
+
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"),
                                          default=True)
 
@@ -94,7 +95,8 @@ class BlogCategory(Slugged):
     """
     A category for grouping blog posts into a series.
     """
-
+    parent_category = models.ForeignKey("BlogParentCategory", null=True,
+                                   related_name="blog_parent_category")
     class Meta:
         verbose_name = _("Blog Category")
         verbose_name_plural = _("Blog Categories")
@@ -103,3 +105,17 @@ class BlogCategory(Slugged):
     @models.permalink
     def get_absolute_url(self):
         return ("blog_post_list_category", (), {"category": self.slug})
+
+class BlogParentCategory(Slugged):
+    """
+    A category for grouping blog posts into a series.
+    """
+
+    class Meta:
+        verbose_name = _("Blog ParentCategory")
+        verbose_name_plural = _("Blog ParentCategories")
+        ordering = ("title",)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ("blog_post_list_parentcategory", (), {"parentcategory": self.slug})
