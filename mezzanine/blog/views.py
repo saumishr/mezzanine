@@ -97,7 +97,11 @@ def get_vendors(request, template="blog/search_results.html"):
         pathlist = parsedURL.path.split("/")
 
         blog_parentcategory = None
-        blog_parentcategory_slug = pathlist[-1]
+        """
+        /xyz/abc/ will return a list ["","xyz",abc",""] after parsing.
+        2nd and 3rd element from last will be sub_category and parent_category respectively.
+        """
+        blog_parentcategory_slug = pathlist[-3]
 
         if blog_parentcategory_slug != "all" and BlogParentCategory.objects.all().exists():
             try:
@@ -119,7 +123,10 @@ def get_vendors(request, template="blog/search_results.html"):
             if blog_subcategory and blog_parentcategory:
                 results = BlogPost.objects.published().filter(categories=blog_subcategory).order_by('-overall_average')
             else:
-                results = BlogPost.objects.published().order_by('-overall_average')
+            	"""
+                raise 404 error, in case categories are not present.
+                """
+                raise Http404()
 
         settings.use_editable()
         page = request.GET.get("page", 1)
@@ -129,4 +136,5 @@ def get_vendors(request, template="blog/search_results.html"):
         paginated = paginate(results, page, per_page, max_paging_links)
         context = {"results": paginated,}
     	return render(request, template, context)
-    return HttpResponseRedirect("/")
+    else:
+    	raise Http404()
