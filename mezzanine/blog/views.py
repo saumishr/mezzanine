@@ -1,7 +1,9 @@
 from calendar import month_name
 
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.utils import simplejson
+from django.template.defaultfilters import slugify
 
 from mezzanine.blog.models import BlogPost, BlogCategory, BlogParentCategory
 from mezzanine.blog.feeds import PostsRSS, PostsAtom
@@ -9,7 +11,7 @@ from mezzanine.conf import settings
 from mezzanine.generic.models import Keyword
 from mezzanine.utils.views import render, paginate
 from mezzanine.utils.models import get_user_model
-from django.utils import simplejson
+
 
 User = get_user_model()
 
@@ -79,7 +81,42 @@ def blog_post_feed(request, format, **kwargs):
         raise Http404()
 
 def blog_subcategories(request, category_slug):
-    from django.template.defaultfilters import slugify
-    parent_category = BlogParentCategory.objects.get(slug=slugify(category_slug))
-    sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category).values_list('title')
-    return HttpResponse(simplejson.dumps(list(sub_categories)))
+    if request.is_ajax():
+        parent_category = BlogParentCategory.objects.get(slug=slugify(category_slug))
+        if parent_category:
+            sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category).values_list('title')
+            return HttpResponse(simplejson.dumps(list(sub_categories)))
+        return HttpResponse(simplejson.dumps("error"))
+    else:
+        raise Http404()
+
+def get_vendors(request, template="blog/search_results.html"):
+    from mezzanine.conf import settings
+    from mezzanine.utils.views import paginate, render
+    from django.utils.translation import ugettext_lazy as _
+    if request.method == "GET":
+        blog_parentcategory = None
+        if BlogParentCategory.objects.all().exists():
+            try:
+                blog_parentcategory = BlogParentCategory.objects.get(slug=slugify(_(request.GET.get("pc", ""))))
+            except BlogParentCategory.DoesNotExist:
+                pass
+
+        blog_subcategory = None
+        if BlogCategory.objects.all().exists():
+            try:
+                blog_subcategory = BlogCategory.objects.get(slug=slugify(_(request.GET.get("sc", ""))))
+            except BlogCategory.DoesNotExist:
+                return HttpResponseRedirect("/")
+
+        results = BlogPost.objects.published().filter(categories=blog_subcategory).order_by('-overall_average')
+
+        settings.use_editable()
+        page = request.GET.get("page", 1)
+        per_page = settings.SEARCH_PER_PAGE
+        max_paging_links = settings.MAX_PAGING_LINKS
+
+        paginated = paginate(results, page, per_page, max_paging_links)
+        context = {"results": paginated,}
+    	return render(request, template, context)
+    return HttpResponseRedirect("/")

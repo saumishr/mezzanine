@@ -3,10 +3,11 @@ from datetime import datetime
 from django.db.models import Count, Q
 
 from mezzanine.blog.forms import BlogPostForm
-from mezzanine.blog.models import BlogPost, BlogCategory
+from mezzanine.blog.models import BlogPost, BlogCategory, BlogParentCategory
 from mezzanine.generic.models import Keyword
 from mezzanine import template
 from mezzanine.utils.models import get_user_model
+from django.template.defaultfilters import slugify
 
 User = get_user_model()
 
@@ -45,6 +46,20 @@ def blog_categories_abs(*args):
     """
     categories = BlogCategory.objects.all()
     return list(categories)
+
+@register.as_tag
+def blog_parentcategories_abs(*args):
+    """
+    Put a list of categories for blog posts into the template context.
+    """
+    parent_categories = BlogParentCategory.objects.all()
+    return list(parent_categories)
+
+@register.as_tag
+def blog_subcategories(parent_category_slug):
+    parent_category = BlogParentCategory.objects.get(slug=slugify(parent_category_slug))
+    sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category)
+    return list(sub_categories)
 
 @register.as_tag
 def blog_authors(*args):
