@@ -4,6 +4,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson
 from django.template.defaultfilters import slugify
+from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.blog.models import BlogPost, BlogCategory, BlogParentCategory
 from mezzanine.blog.feeds import PostsRSS, PostsAtom
@@ -11,7 +12,7 @@ from mezzanine.conf import settings
 from mezzanine.generic.models import Keyword
 from mezzanine.utils.views import render, paginate
 from mezzanine.utils.models import get_user_model
-
+import urlparse
 
 User = get_user_model()
 
@@ -91,25 +92,34 @@ def blog_subcategories(request, category_slug):
         raise Http404()
 
 def get_vendors(request, template="blog/search_results.html"):
-    from mezzanine.conf import settings
-    from mezzanine.utils.views import paginate, render
-    from django.utils.translation import ugettext_lazy as _
     if request.method == "GET":
+        parsedURL = urlparse.urlparse(request.path)
+        pathlist = parsedURL.path.split("/")
+
         blog_parentcategory = None
-        if BlogParentCategory.objects.all().exists():
+        blog_parentcategory_slug = pathlist[-1]
+
+        if blog_parentcategory_slug != "all" and BlogParentCategory.objects.all().exists():
             try:
-                blog_parentcategory = BlogParentCategory.objects.get(slug=slugify(_(request.GET.get("pc", ""))))
+                blog_parentcategory = BlogParentCategory.objects.get(slug=slugify(blog_parentcategory_slug))
             except BlogParentCategory.DoesNotExist:
                 pass
 
         blog_subcategory = None
-        if BlogCategory.objects.all().exists():
+        blog_subcategory_slug = pathlist[-2]
+        if blog_parentcategory_slug != "all" and BlogCategory.objects.all().exists():
             try:
-                blog_subcategory = BlogCategory.objects.get(slug=slugify(_(request.GET.get("sc", ""))))
+                blog_subcategory = BlogCategory.objects.get(slug=slugify(blog_subcategory_slug))
             except BlogCategory.DoesNotExist:
-                return HttpResponseRedirect("/")
+                pass
 
-        results = BlogPost.objects.published().filter(categories=blog_subcategory).order_by('-overall_average')
+        if blog_parentcategory_slug == "all" and blog_subcategory_slug == "all":
+            results = BlogPost.objects.published().order_by('-overall_average')
+        else:
+            if blog_subcategory and blog_parentcategory:
+                results = BlogPost.objects.published().filter(categories=blog_subcategory).order_by('-overall_average')
+            else:
+                results = BlogPost.objects.published().order_by('-overall_average')
 
         settings.use_editable()
         page = request.GET.get("page", 1)
