@@ -57,9 +57,16 @@ def blog_parentcategories_abs(*args):
 
 @register.as_tag
 def blog_subcategories(parent_category_slug):
-    parent_category = BlogParentCategory.objects.get(slug=slugify(parent_category_slug))
-    sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category)
-    return list(sub_categories)
+    try:
+        parent_category = BlogParentCategory.objects.get(slug=slugify(parent_category_slug))
+    except BlogParentCategory.DoesNotExist:
+        return ''
+
+    sub_categories = None
+    if parent_category:
+        sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category)
+        return list(sub_categories)
+    return ''
 
 @register.as_tag
 def blog_authors(*args):
