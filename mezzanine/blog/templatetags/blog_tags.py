@@ -69,6 +69,14 @@ def blog_subcategories(parent_category_slug):
     return ''
 
 @register.as_tag
+def blog_subcategories_for_blog(blog):
+    """
+    Put a list of categories for blog posts into the template context.
+    """
+    sub_categories = blog.categories.all() 
+    return list(sub_categories)
+
+@register.as_tag
 def blog_authors(*args):
     """
     Put a list of authors (users) for blog posts into the template context.
