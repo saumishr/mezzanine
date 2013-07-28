@@ -12,7 +12,7 @@ from mezzanine.conf import settings
 from mezzanine.utils.models import get_user_model_name
 from mezzanine.utils.sites import current_site_id
 from mezzanine.generic.fields import CommentsField
-
+from follow import utils
 
 class ThreadedComment(Comment):
     """
@@ -227,3 +227,6 @@ class Rating(models.Model):
             raise ValueError("Invalid rating. %s is not in %s" % (self.value,
                 ", ".join(valid)))
         super(Rating, self).save(*args, **kwargs)
+
+utils.register(Review)
+
