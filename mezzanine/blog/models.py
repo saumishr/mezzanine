@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.db.models.signals import post_save
 
 from mezzanine.conf import settings
 from mezzanine.core.fields import FileField
@@ -8,6 +9,7 @@ from mezzanine.generic.fields import CommentsField, RatingField, ReviewsField, R
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 from django.db import models
 from follow import utils
+from actstream import actions
 
 class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
     """
@@ -119,3 +121,15 @@ class BlogParentCategory(Slugged):
     @models.permalink
     def get_absolute_url(self):
         return ("blog_post_list_parentcategory", (), {"parentcategory": self.slug})
+
+
+def blog_post_saved(sender, created, **kwargs):
+    from django.http import Http404, HttpResponse
+    from django.utils import simplejson
+
+    if created:
+        obj = kwargs['instance']
+        if obj:
+            actions.follow(obj.user, obj, send_action=False, actor_only=False) 
+
+post_save.connect(blog_post_saved, sender=BlogPost)
