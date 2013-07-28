@@ -8,7 +8,7 @@ from mezzanine import template
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm
 from mezzanine.generic.forms import ReviewForm
-from mezzanine.generic.models import ThreadedComment
+from mezzanine.generic.models import ThreadedComment, Review
 from mezzanine.blog.models import BlogPost
 
 from django.contrib.contenttypes.models import ContentType
@@ -69,7 +69,7 @@ def comment_thread(context, parent):
         for comment in comments_queryset.select_related("user"):
             comments[comment.replied_to_id].append(comment)
         context["all_comments"] = comments
-    parent_id = parent.id if isinstance(parent, ThreadedComment) else None
+    parent_id = parent.id if isinstance(parent, Review) else None
     try:
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
@@ -103,7 +103,7 @@ def comment_thread_most_recent(context, parent):
   
         context["all_comments"] = comments
 
-    parent_id = parent.id if isinstance(parent, ThreadedComment) else None
+    parent_id = parent.id if isinstance(parent, Review) else None
     
     try:
         replied_to = int(context["request"].POST["replied_to"])
@@ -134,7 +134,7 @@ def comment_thread_most_liked(context, parent):
         else:
             comments_queryset = parent.comments.visible()
 
-        model_type = ContentType.objects.get_for_model(ThreadedComment)
+        model_type = ContentType.objects.get_for_model(Review)
         table_name = Comment._meta.db_table
 
         commentsList = comments_queryset.extra(select={
@@ -145,7 +145,7 @@ def comment_thread_most_liked(context, parent):
             comments[comment.replied_to_id].append(comment)
  
         context["all_comments"] = comments
-    parent_id = parent.id if isinstance(parent, ThreadedComment) else None
+    parent_id = parent.id if isinstance(parent, Review) else None
     try:
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
@@ -194,7 +194,7 @@ def comment_thread_social(context, parent):
                 comments[comment.replied_to_id].append(comment)
 
         context["all_comments"] = comments
-    parent_id = parent.id if isinstance(parent, ThreadedComment) else None
+    parent_id = parent.id if isinstance(parent, Review) else None
     try:
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
@@ -258,7 +258,7 @@ def comment_thread_social_level2(context, parent):
                         comments[comment.replied_to_id].append(comment)
  
         context["all_comments"] = comments
-    parent_id = parent.id if isinstance(parent, ThreadedComment) else None
+    parent_id = parent.id if isinstance(parent, Review) else None
     try:
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
