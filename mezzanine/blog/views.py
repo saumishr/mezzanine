@@ -113,7 +113,7 @@ def get_vendors(request, template="blog/search_results.html"):
         """
         blog_parentcategory_slug = pathlist[-3]
 
-        if blog_parentcategory_slug != "all" and BlogParentCategory.objects.all().exists():
+        if blog_parentcategory_slug.lower() != "all" and BlogParentCategory.objects.all().exists():
             try:
                 blog_parentcategory = BlogParentCategory.objects.get(slug=slugify(blog_parentcategory_slug))
             except BlogParentCategory.DoesNotExist:
@@ -121,15 +121,15 @@ def get_vendors(request, template="blog/search_results.html"):
 
         blog_subcategory = None
         blog_subcategory_slug = pathlist[-2]
-        if blog_subcategory_slug != "all" and BlogCategory.objects.all().exists():
+        if blog_subcategory_slug.lower() != "all" and BlogCategory.objects.all().exists():
             try:
                 blog_subcategory = BlogCategory.objects.get(slug=slugify(blog_subcategory_slug))
             except BlogCategory.DoesNotExist:
                 raise Http404()
 
-        if blog_parentcategory_slug == "all" and blog_subcategory_slug == "all":
+        if blog_parentcategory_slug.lower() == "all" and blog_subcategory_slug.lower() == "all":
             results = BlogPost.objects.published().order_by('-overall_average')
-        elif blog_parentcategory_slug != "all" and blog_subcategory_slug == "all":
+        elif blog_parentcategory_slug.lower() != "all" and blog_subcategory_slug.lower() == "all":
             if blog_parentcategory:
                 blog_subcategories = BlogCategory.objects.all().filter(parent_category=blog_parentcategory)
                 results = BlogPost.objects.published().filter(categories__in=blog_subcategories).distinct().order_by('-overall_average')
