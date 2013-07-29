@@ -85,8 +85,10 @@ def blog_subcategories(request, category_slug):
     if request.is_ajax():
         parent_category = BlogParentCategory.objects.get(slug=slugify(category_slug))
         if parent_category:
+            resultCategoryList = ["All",]
             sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category).values_list('title')
-            return HttpResponse(simplejson.dumps(list(sub_categories)))
+            resultCategoryList = resultCategoryList + list(sub_categories)
+            return HttpResponse(simplejson.dumps(resultCategoryList))
         return HttpResponse(simplejson.dumps("error"))
     else:
         raise Http404()
