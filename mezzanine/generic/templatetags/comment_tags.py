@@ -45,6 +45,8 @@ def comments_for_review(context, obj):
     comments are being rendered for.
     """
     form = ThreadedCommentForm(context["request"], obj)
+    form.fields['comment'].widget.attrs['class'] = 'comment_on_review'
+    form.fields['comment'].widget.attrs['placeholder'] = 'Write a comment...'
     form.fields['comment'].label = "comment"
     context["posted_comment_form"] = form
     context["unposted_comment_form"] = form
