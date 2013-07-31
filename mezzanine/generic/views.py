@@ -111,7 +111,7 @@ def comment(request, template="generic/comments.html"):
             Send activity feed to those who follow this vendor page.
         """
         if request.user.is_authenticated():
-            action.send(obj, verb=u'has got a new review from', action_object=comment, target=request.user)
+            action.send(obj, verb=u'has got a new review', target=comment )
         return response
     elif request.is_ajax() and form.errors:
         return HttpResponse(dumps({"errors": form.errors}))
