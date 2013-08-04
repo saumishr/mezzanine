@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
 
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm, RatingForm, ReviewForm
@@ -150,20 +151,34 @@ def comment_on_review(request, template="generic/comments.html"):
     response = render(request, template, context)
     return response
 
-def fetch_comments_on_obj(request, content_type_id, object_id):
+def fetch_commenters_on_obj(request, content_type_id, object_id):
     ctype = get_object_or_404(ContentType, pk=content_type_id)
     parent = get_object_or_404(ctype.model_class(), pk=object_id)
-    comments = []
+
     if request.user.is_staff:
         comments_queryset = parent.comments.all()
     else:
         comments_queryset = parent.comments.visible()
 
-    for comment in comments_queryset.select_related("user"):
-        comments.append(comment) 
+    commenter_ids =  comments_queryset.select_related("user").values_list('user', flat=True)
+    commenters = User.objects.all().filter(id__in=set(commenter_ids))
+    return render_to_response('generic/includes/commenters.html', {
+       'commenters': commenters, 
+    }, context_instance=RequestContext(request))
+
+def fetch_comments_on_obj(request, content_type_id, object_id):
+    ctype = get_object_or_404(ContentType, pk=content_type_id)
+    parent = get_object_or_404(ctype.model_class(), pk=object_id)
+
+    if request.user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
+
+    comments_queryset =  comments_queryset.select_related("user")
 
     return render_to_response('generic/includes/subcomment.html', {
-       'comments_for_thread': comments, 
+       'comments_for_thread': comments_queryset, 
     }, context_instance=RequestContext(request))
 
 def rating(request):

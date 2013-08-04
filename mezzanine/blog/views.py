@@ -86,7 +86,7 @@ def blog_subcategories(request, category_slug):
         parent_category = BlogParentCategory.objects.get(slug=slugify(category_slug))
         if parent_category:
             resultCategoryList = ["All",]
-            sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category).values_list('title')
+            sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category).values_list('title', flat=True)
             resultCategoryList = resultCategoryList + list(sub_categories)
             return HttpResponse(simplejson.dumps(resultCategoryList))
         return HttpResponse(simplejson.dumps("error"))

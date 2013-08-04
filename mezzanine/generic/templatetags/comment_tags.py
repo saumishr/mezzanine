@@ -299,6 +299,13 @@ def recent_reviews(context):
     context["comments"] = comments
     return context
 
+@register.simple_tag(name='comment_count_on_object')
+def get_number_of_comments_on_obj(object):
+    comments_queryset = None
+    if object:
+        comments_queryset = object.comments.visible().select_related("user")
+    return len(comments_queryset)    
+
 @register.filter
 def comment_filter(comment_text):
     """
@@ -332,6 +339,23 @@ class CommentsForObjURL(Node):
         obj_instance = self.obj.resolve(context)
         content_type = ContentType.objects.get_for_model(obj_instance).pk
         return reverse('fetch_comments_on_obj', kwargs={'content_type_id': content_type, 'object_id': obj_instance.pk })
+
+@register.tag
+def get_commenters_url(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 2:
+        raise TemplateSyntaxError("Accepted format {% comments_for_obj_url [instance] %}")
+    else:
+        return GetCommentersForObjURL(bits[1])
+
+class GetCommentersForObjURL(Node):
+    def __init__(self, obj):
+        self.obj = Variable(obj)
+
+    def render(self, context):
+        obj_instance = self.obj.resolve(context)
+        content_type = ContentType.objects.get_for_model(obj_instance).pk
+        return reverse('fetch_commenters_on_obj', kwargs={'content_type_id': content_type, 'object_id': obj_instance.pk })
 
 @register.inclusion_tag("generic/includes/render_comment.html", takes_context=True)
 def render_comment(context, comment):
