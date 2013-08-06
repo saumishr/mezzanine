@@ -15,4 +15,5 @@ urlpatterns = patterns("mezzanine.generic.views",
    	url("^comment_thread_default_view/(?P<obj>.*)$", "comment_thread_default_view", name="comment_thread_default_view"),
    	url("^comment_thread_social_view/(?P<obj>.*)$", "comment_thread_social_view", name="comment_thread_social_view"),
     url("^comment_thread_social_view_level2/(?P<obj>.*)$", "comment_thread_social_view_level2", name="comment_thread_social_view_level2"),
+    url(r'^review/(?P<blog_slug>\w+)/(?P<review_id>\d+)/$', 'render_review', name='render_review'),
 )

@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm, RatingForm, ReviewForm
-from mezzanine.generic.models import Keyword
+from mezzanine.generic.models import Keyword, Review
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.views import render, set_cookie, is_spam
 from mezzanine.blog.models import BlogPost
@@ -321,3 +321,18 @@ def comment_thread_social_view_level2(request, obj, template="generic/includes/c
     context["comment_url"] = reverse("comment")
     context["object_for_comments"] = parent
     return render(request, template, context)
+
+def render_review(request, blog_slug, review_id, template="generic/includes/review_page.html"):
+    """
+    Return a list of child comments for the given parent, storing all
+    comments in a dict in the context when first called, using parents
+    as keys for retrieval on subsequent recursive calls from the
+    comments template.
+    """
+    review = Review.objects.get(id=review_id)
+    context = RequestContext(request)
+    blog_post = BlogPost.objects.get(slug=blog_slug)
+    return render_to_response('generic/includes/review_page.html', {
+       'comment': review, 
+       'blog_post': blog_post,
+    }, context_instance=context)
