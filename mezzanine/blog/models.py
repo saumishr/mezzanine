@@ -106,7 +106,10 @@ class BlogCategory(Slugged):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("blog_post_list_category", (), {"category": self.slug})
+        url_name = "get_vendors"
+        kwargs = {"parent_category_slug": self.parent_category.slug, "sub_category_slug": self.slug}
+        return (url_name, (), kwargs)
+
 
 class BlogParentCategory(Slugged):
     """
@@ -120,7 +123,9 @@ class BlogParentCategory(Slugged):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("blog_post_list_parentcategory", (), {"parentcategory": self.slug})
+        url_name = "get_vendors"
+        kwargs = {"parent_category_slug": self.slug, "sub_category_slug": "all"}
+        return (url_name, (), kwargs)
 
 
 def blog_post_saved(sender, created, **kwargs):

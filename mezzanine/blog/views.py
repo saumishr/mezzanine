@@ -103,17 +103,17 @@ def get_vendors_all(request):
     url += "all/all/"
     return HttpResponseRedirect(url)
 
-def get_vendors(request, template="blog/search_results.html"):
+def get_vendors(request, parent_category_slug, sub_category_slug, template="blog/search_results.html"):
     if request.method == "GET":
-        parsedURL = urlparse.urlparse(request.path)
-        pathlist = parsedURL.path.split("/")
+        #parsedURL = urlparse.urlparse(request.path)
+        #pathlist = parsedURL.path.split("/")
 
         blog_parentcategory = None
         """
         /xyz/abc/ will return a list ["","xyz",abc",""] after parsing.
         2nd and 3rd element from last will be sub_category and parent_category respectively.
         """
-        blog_parentcategory_slug = pathlist[-3]
+        blog_parentcategory_slug = parent_category_slug#pathlist[-3]
 
         if blog_parentcategory_slug.lower() != "all" and BlogParentCategory.objects.all().exists():
             try:
@@ -122,7 +122,7 @@ def get_vendors(request, template="blog/search_results.html"):
                 raise Http404()
 
         blog_subcategory = None
-        blog_subcategory_slug = pathlist[-2]
+        blog_subcategory_slug = sub_category_slug#pathlist[-2]
         if blog_subcategory_slug.lower() != "all" and BlogCategory.objects.all().exists():
             try:
                 blog_subcategory = BlogCategory.objects.get(slug=slugify(blog_subcategory_slug))
