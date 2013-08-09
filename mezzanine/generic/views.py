@@ -5,10 +5,12 @@ from django.core.urlresolvers import reverse
 from django.db.models import get_model, ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.utils import simplejson
 from django.utils.simplejson import dumps
 from django.utils.translation import ugettext_lazy as _
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template.loader import render_to_string
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 
@@ -140,16 +142,25 @@ def comment_on_review(request, template="generic/comments.html"):
         if is_spam(request, form, url):
             return redirect(url)  
         comment = form.save(request)
-        response = redirect(add_cache_bypass(comment.get_absolute_url()))
+        if request.is_ajax():
+            comment = form.save(request)
+            comments = [comment]
 
-        return response
+            html = render_to_string('generic/includes/subcomment.html', { 'comments_for_thread': comments }) 
+            res = {'html': html}
+            return HttpResponse( simplejson.dumps(res), 'application/json' )
+        else:
+            response = redirect(add_cache_bypass(comment.get_absolute_url()))
+            return response
+
     elif request.is_ajax() and form.errors:
         return HttpResponse(dumps({"errors": form.errors}))
 
     # Show errors with stand-alone comment form.
-    context = {"obj": obj, "posted_comment_form": form}
-    response = render(request, template, context)
-    return response
+    if not request.is_ajax():
+        context = {"obj": obj, "posted_comment_form": form}
+        response = render(request, template, context)
+        return response
 
 def fetch_commenters_on_obj(request, content_type_id, object_id):
     ctype = get_object_or_404(ContentType, pk=content_type_id)
