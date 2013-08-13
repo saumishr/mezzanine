@@ -3,29 +3,7 @@
 
 {% if commenters %}
 	{% for commenter in commenters %}
-		{% if commenter.get_absolute_url %}
-			<a href="{{ commenter.get_absolute_url }}">
-				{% if commenter|get_class_name == "User" %}
-				  	{% if commenter.get_profile.profile_photo %}
-
-					    {% thumbnail commenter.get_profile.profile_photo "90x90" as img %} 
-					      <img style="margin-right:20px;" src="{{ MEDIA_URL }}{{img}}">
-					    {% endthumbnail %}
-
-				  	{% elif commenter.get_profile.image_url %}
-				    	<img style="margin-right:20px;" src="{{ commenter.get_profile.image_url }}">
-
-				  	{% else %}
-				    	<img style="margin-right:20px;height=80px;width:80px;" src="{{ STATIC_URL }}img/defaultProfilePic.gif"> 
-
-				  	{% endif %}
-
-				{% else %}
-					{{commenter}}
-				{% endif %}
-			</a>
-		{% else %}
-			{{commenter}}
-		{% endif %}
+		{% include 'generic/includes/render_owner.html' with owner=commenter %}
+		{% include 'actstream/render_actor_name.html' with actor=commenter %}
 	{% endfor %}
 {% endif %}
