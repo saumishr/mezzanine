@@ -74,6 +74,8 @@ def initial_validation(request, prefix):
             redirect_url = "%s?next=%s" % (settings.LOGIN_URL, reverse(prefix))
         elif posted_session_key in request.session:
             post_data = request.session.pop(posted_session_key)
+            if not request.POST:
+            	request.POST = post_data
     if not redirect_url:
         try:
             model = get_model(*post_data.get("content_type", "").split(".", 1))
@@ -98,7 +100,7 @@ def comment(request, template="generic/comments.html"):
     if isinstance(response, HttpResponse):
         return response
     obj, post_data = response
-    form = ReviewForm(request, obj, post_data)
+    form = ReviewForm(request, obj, request.POST )
     if form.is_valid():
         url = obj.get_absolute_url()
         if is_spam(request, form, url):
@@ -136,7 +138,7 @@ def comment_on_review(request, template="generic/comments.html"):
         return response
     obj, post_data = response
 
-    form = ThreadedCommentForm(request, obj, post_data)
+    form = ThreadedCommentForm(request, obj, request.POST)
     if form.is_valid():
         url = obj.get_absolute_url()
         if is_spam(request, form, url):
