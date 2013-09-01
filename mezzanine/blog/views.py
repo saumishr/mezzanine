@@ -133,7 +133,7 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
             results = BlogPost.objects.published().order_by('-overall_average')
         elif blog_parentcategory_slug.lower() != "all" and blog_subcategory_slug.lower() == "all":
             if blog_parentcategory:
-                blog_subcategories = BlogCategory.objects.all().filter(parent_category=blog_parentcategory)
+                blog_subcategories = list(BlogCategory.objects.all().filter(parent_category=blog_parentcategory))
                 results = BlogPost.objects.published().filter(categories__in=blog_subcategories).distinct().order_by('-overall_average')
         else:
             if blog_subcategory and blog_parentcategory:
@@ -150,7 +150,9 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
         max_paging_links = settings.MAX_PAGING_LINKS
 
         paginated = paginate(results, page, per_page, max_paging_links)
-        context = {"results": paginated,}
+        context = {"results": paginated,
+                    "parent_category": parent_category_slug,
+                    "sub_category": sub_category_slug,}
     	return render(request, template, context)
     else:
     	raise Http404()
