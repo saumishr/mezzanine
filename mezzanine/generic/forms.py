@@ -17,6 +17,7 @@ from django.utils import timezone
 from mezzanine.forms.widgets import TextareaEx
 
 COMMENT_MAX_LENGTH = getattr(settings,'COMMENT_MAX_LENGTH', 3000)
+REVIEW_TITLE_MAX_LENGTH = getattr(settings,'REVIEW_TITLE_MAX_LENGTH',250)
 
 class KeywordsWidget(forms.MultiWidget):
     """
@@ -179,9 +180,11 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
     """
     Form for a Review. Subclasses ``ThreadedCommentForm``
     """
+    title         = forms.CharField(label=_("Title"), help_text=_("required"), max_length=REVIEW_TITLE_MAX_LENGTH, required=True)
+
     overall_value = forms.ChoiceField(label="Overall", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
-    price_value = forms.ChoiceField(label="Price", widget=forms.RadioSelect,
+    price_value   = forms.ChoiceField(label="Price", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
     variety_value = forms.ChoiceField(label="Variety", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
@@ -223,6 +226,8 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         else:
             optionalreviewrating_instance = OptionalReviewRating()
 
+        if (post_data.get("title")):
+            review.title = post_data.get("title")
         if (post_data.get("overall_value")):
             review.overall_value = post_data.get("overall_value")
             requiredreviewrating_instance.overall_value = review.overall_value

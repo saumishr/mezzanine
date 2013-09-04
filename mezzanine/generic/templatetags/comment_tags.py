@@ -29,6 +29,7 @@ def comments_for(context, obj):
     comments are being rendered for.
     """
     form = ReviewForm(context["request"], obj)
+    form.fields['title'].widget.attrs['placeholder'] = 'Write a title...'
     try:
         context["posted_comment_form"]
     except KeyError:

@@ -4,6 +4,7 @@ from django.contrib.contenttypes.generic import GenericForeignKey
 from django.db import models
 from django.template.defaultfilters import truncatewords_html
 from django.utils.translation import ugettext, ugettext_lazy as _
+from django.conf import settings
 
 from mezzanine.generic.fields import RatingField
 from mezzanine.generic.managers import CommentManager, KeywordManager
@@ -13,6 +14,8 @@ from mezzanine.utils.models import get_user_model_name
 from mezzanine.utils.sites import current_site_id
 from mezzanine.generic.fields import CommentsField
 from follow import utils
+
+REVIEW_TITLE_MAX_LENGTH = getattr(settings,'REVIEW_TITLE_MAX_LENGTH',250)
 
 class ThreadedComment(Comment):
     """
@@ -83,6 +86,7 @@ class ThreadedComment(Comment):
         return self.email
 
 class Review(ThreadedComment):
+    title = models.TextField(_('review_title'), max_length=REVIEW_TITLE_MAX_LENGTH)
     overall_value = models.IntegerField(_("Overall"))
     price_value = models.IntegerField(_("Price"))
     variety_value = models.IntegerField(_("Variety"))
