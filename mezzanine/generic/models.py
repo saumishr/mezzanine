@@ -16,6 +16,7 @@ from mezzanine.generic.fields import CommentsField
 from follow import utils
 
 REVIEW_TITLE_MAX_LENGTH = getattr(settings,'REVIEW_TITLE_MAX_LENGTH',250)
+BOOL_CHOICES = ((True, 'Yes'), (False, 'No'))
 
 class ThreadedComment(Comment):
     """
@@ -94,7 +95,7 @@ class Review(ThreadedComment):
     service_value = models.IntegerField(_("Customer Service"))
     exchange_value = models.IntegerField(_("Exchange Experience"), null = True)
     bought_category = models.TextField(_("Bought"))
-    
+    shop_again      = models.IntegerField(_("Will you shop again from this vendor?"))
     objects = CommentManager()
     
     class Meta:
@@ -142,6 +143,7 @@ class RequiredReviewRating(models.Model):
     service_value = models.IntegerField(_("Service Value"))
     rating_date = models.DateTimeField(_("Required Review Rating date"),
         auto_now_add=True, null=True)
+    shop_again      = models.IntegerField(_("Will you shop again from this vendor?"))
     content_type = models.ForeignKey("contenttypes.ContentType")
     object_pk = models.IntegerField()
     content_object = GenericForeignKey("content_type", "object_pk")

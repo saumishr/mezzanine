@@ -18,7 +18,9 @@ from mezzanine.forms.widgets import TextareaEx
 
 COMMENT_MAX_LENGTH = getattr(settings,'COMMENT_MAX_LENGTH', 3000)
 REVIEW_TITLE_MAX_LENGTH = getattr(settings,'REVIEW_TITLE_MAX_LENGTH',250)
-
+choices = ( (1,'Yes'),
+            (0,'No'),
+          )
 class KeywordsWidget(forms.MultiWidget):
     """
     Form field for the ``KeywordsField`` generic relation field. Since
@@ -176,6 +178,7 @@ ThreadedCommentForm.base_fields.pop('url')
 ThreadedCommentForm.base_fields.pop('email')
 ThreadedCommentForm.base_fields.pop('name')
 
+
 class ReviewForm(ThreadedCommentForm, Html5Mixin):
     """
     Form for a Review. Subclasses ``ThreadedCommentForm``
@@ -194,7 +197,9 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
     exchange_value = forms.ChoiceField(label="Exchange Experience", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2), required=False)
-    
+    shop_again     = forms.TypedChoiceField(
+                         choices=choices, widget=forms.RadioSelect, coerce=int)
+
     def save(self, request):
         """
         Saves a new comment and sends any notification emails.
@@ -243,10 +248,12 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         if (post_data.get("service_value")):
             review.service_value = post_data.get("service_value")
             requiredreviewrating_instance.service_value = review.service_value
+        if (post_data.get("shop_again")):
+            review.shop_again = post_data.get("shop_again")
+            requiredreviewrating_instance.shop_again = review.shop_again
         if (post_data.get("exchange_value")):
             review.exchange_value = post_data.get("exchange_value")
             optionalreviewrating_instance.exchange_value = review.exchange_value
-
         review.save()
         
         # the primary key for review will be generated when it is saved

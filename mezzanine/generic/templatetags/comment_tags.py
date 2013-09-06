@@ -8,7 +8,7 @@ from mezzanine import template
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm
 from mezzanine.generic.forms import ReviewForm
-from mezzanine.generic.models import ThreadedComment, Review
+from mezzanine.generic.models import ThreadedComment, Review, RequiredReviewRating
 from mezzanine.blog.models import BlogPost
 
 from django.contrib.contenttypes.models import ContentType
@@ -364,3 +364,11 @@ def render_comment(context, comment):
         "comment": comment,
     })
     return context
+
+@register.filter
+def get_reviewrating_obj(review):
+    try:
+        review_rating_obj = RequiredReviewRating.objects.get(commentid=review.id)
+        return review_rating_obj
+    except:
+        return None
