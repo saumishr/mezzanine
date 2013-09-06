@@ -16,7 +16,6 @@ from mezzanine.generic.fields import CommentsField
 from follow import utils
 
 REVIEW_TITLE_MAX_LENGTH = getattr(settings,'REVIEW_TITLE_MAX_LENGTH',250)
-BOOL_CHOICES = ((True, 'Yes'), (False, 'No'))
 
 class ThreadedComment(Comment):
     """
