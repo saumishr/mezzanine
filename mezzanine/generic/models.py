@@ -2,7 +2,7 @@
 from django.contrib.comments.models import Comment
 from django.contrib.contenttypes.generic import GenericForeignKey
 from django.db import models
-from django.template.defaultfilters import truncatewords_html
+from django.template.defaultfilters import truncatewords_html, truncatechars
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.conf import settings
 
@@ -100,6 +100,9 @@ class Review(ThreadedComment):
     class Meta:
         verbose_name = _("Review")
         verbose_name_plural = _("Review")
+
+    def introchars(self):
+        return truncatechars(self.comment, 90)
 
 class Keyword(Slugged):
     """
