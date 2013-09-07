@@ -13,6 +13,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm, RatingForm, ReviewForm
@@ -90,7 +91,7 @@ def initial_validation(request, prefix):
             return redirect(redirect_url)
     return obj, post_data
 
-
+@login_required
 def comment(request, template="generic/comments.html"):
     """
     Handle a ``ReviewForm`` submission and redirect back to its
@@ -125,8 +126,7 @@ def comment(request, template="generic/comments.html"):
     response = render(request, template, context)
     return response
 
-
-from django.template import RequestContext
+@login_required
 def comment_on_review(request, template="generic/comments.html"):
     """
     Handle a ``ThreadedCommentForm`` submission and redirect back to its
@@ -293,6 +293,7 @@ def comment_thread_default_view(request, obj, template="generic/includes/comment
     context["object_for_comments"] = parent
     return render(request, template, context)
 
+@login_required
 def comment_thread_social_view(request, obj, template="generic/includes/comments_social.html"):
     """
     Return a list of child comments for the given parent, storing all
@@ -314,6 +315,7 @@ def comment_thread_social_view(request, obj, template="generic/includes/comments
     context["object_for_comments"] = parent
     return render(request, template, context)
 
+@login_required
 def comment_thread_social_view_level2(request, obj, template="generic/includes/comments_social_level2.html"):
     """
     Return a list of child comments for the given parent, storing all
