@@ -23,12 +23,14 @@ register = template.Library()
 
 
 @register.inclusion_tag("generic/includes/comments.html", takes_context=True)
-def comments_for(context, obj):
+def comments_for(context, obj, css_class=None):
     """
     Provides a generic context variable name for the object that
     comments are being rendered for.
     """
     form = ReviewForm(context["request"], obj)
+    if css_class:
+        form.fields['comment'].widget.attrs['class'] = css_class
     form.fields['title'].widget.attrs['placeholder'] = 'Write a title...'
     try:
         context["posted_comment_form"]
@@ -40,15 +42,16 @@ def comments_for(context, obj):
     return context
 
 @register.inclusion_tag("generic/includes/comments.html", takes_context=True)
-def comments_for_review(context, obj):
+def comments_for_review(context, obj, css_class=None):
     """
     Provides a generic context variable name for the object that
     comments are being rendered for.
     """
     form = ThreadedCommentForm(context["request"], obj)
-    form.fields['comment'].widget.attrs['class'] = 'comment_on_review'
+    if css_class:
+        form.fields['comment'].widget.attrs['class'] = css_class
     form.fields['comment'].widget.attrs['placeholder'] = 'Write a comment...'
-    form.fields['comment'].label = "comment"
+    form.fields['comment'].label = ""
     context["posted_comment_form"] = form
     context["unposted_comment_form"] = form
     context["comment_url"] = reverse("comment_on_review")
