@@ -109,6 +109,12 @@
 }
 
 @media (min-width: 1200px) {
+  .fullGutter {
+    margin-left: 30px;
+  }
+  .halfGutter{
+    margin-left: 12px;
+  }
   .row {
     margin-left: -30px;
     *zoom: 1;
@@ -168,6 +174,14 @@
   }
   .span1 {
     width: 70px;
+  }
+  .span1HalfGutter {
+    width: 70px;
+    margin-left: 15px;
+  }
+  .span1Height {
+    height: 70px;
+    margin-top: 15px;
   }
   .offset12 {
     margin-left: 1230px;
@@ -459,6 +473,12 @@
 }
 
 @media (min-width: 768px) and (max-width: 979px) {
+  .fullGutter {
+    margin-left: 20px;
+  }
+  .halfGutter{
+    margin-left: 8px;
+  }
   .row {
     margin-left: -20px;
     *zoom: 1;
@@ -518,6 +538,14 @@
   }
   .span1 {
     width: 42px;
+  }
+  .span1HalfGutter {
+    width: 42px;
+    margin-left: 10px;
+  }
+  .span1Height {
+    height: 42px;
+    margin-top: 10px;
   }
   .offset12 {
     margin-left: 764px;
