@@ -15,12 +15,53 @@ from django.contrib.contenttypes.models import ContentType
 from voting.models import Vote
 from django.contrib.comments.models import Comment
 
-from django.core.urlresolvers import reverse
 from django.template import TemplateSyntaxError, Node, Variable
 from django.contrib.contenttypes.models import ContentType
 
 register = template.Library()
 
+
+class AsNode(Node):
+    """
+    Base template Node class for template tags that takes a predefined number
+    of arguments, ending in an optional 'as var' section.
+    """
+    args_count = 3
+
+    @classmethod
+    def handle_token(cls, parser, token):
+        """
+        Class method to parse and return a Node.
+        """
+        bits = token.split_contents()
+        args_count = len(bits) - 1
+        if args_count >= 2 and bits[-2] == 'as':
+            as_var = bits[-1]
+            args_count -= 2
+        else:
+            as_var = None
+        if args_count != cls.args_count:
+            arg_list = ' '.join(['[arg]' * cls.args_count])
+            raise TemplateSyntaxError("Accepted formats {%% %(tagname)s "
+                "%(args)s %%} or {%% %(tagname)s %(args)s as [var] %%}" %
+                {'tagname': bits[0], 'args': arg_list})
+        args = [parser.compile_filter(token) for token in
+            bits[1:args_count + 1]]
+        return cls(args, varname=as_var)
+
+    def __init__(self, args, varname=None):
+        self.args = args
+        self.varname = varname
+
+    def render(self, context):
+        result = self.render_result(context)
+        if self.varname is not None:
+            context[self.varname] = result
+            return ''
+        return result
+
+    def render_result(self, context):
+        raise NotImplementedError("Must be implemented by a subclass")
 
 @register.inclusion_tag("generic/includes/comments.html", takes_context=True)
 def comments_for(context, obj, css_class=None):
@@ -303,7 +344,7 @@ def recent_reviews(context):
     context["comments"] = comments
     return context
 
-@register.simple_tag(name='comment_count_on_object')
+@register.assignment_tag(name='comment_count_on_object')
 def get_number_of_comments_on_obj(object):
     comments_queryset = None
     if object:
@@ -344,6 +385,25 @@ class CommentsForObjURL(Node):
         content_type = ContentType.objects.get_for_model(obj_instance).pk
         return reverse('fetch_comments_on_obj', kwargs={'content_type_id': content_type, 'object_id': obj_instance.pk })
 
+class CommentsForObjRangeURL(AsNode):
+    def render_result(self, context):
+        object_instance = self.args[0].resolve(context)
+        sIndex = self.args[1].resolve(context)
+        lIndex = self.args[2].resolve(context)
+        content_type = ContentType.objects.get_for_model(object_instance).pk
+        
+        return reverse('fetch_range_comments_on_obj', kwargs={
+            'content_type_id': content_type, 'object_id': object_instance.pk, 'sIndex':sIndex, 'lIndex':lIndex})
+
+@register.tag
+def comments_subset_url(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 6:
+        raise TemplateSyntaxError("Accepted format "
+                                  "{% comments_subset_url [object_instance] sIndex lIndex as comments_range_url %}")
+    else:
+        return CommentsForObjRangeURL.handle_token(parser, token)
+
 @register.tag
 def get_commenters_url(parser, token):
     bits = token.split_contents()
@@ -375,3 +435,31 @@ def get_reviewrating_obj(review):
         return review_rating_obj
     except:
         return None
+
+class GetCommentsSubsetForObj(AsNode):
+    def render_result(self, context):
+        object_instance = self.args[0].resolve(context)
+        sIndex = self.args[1].resolve(context)
+        lIndex = self.args[2].resolve(context)
+        request = context.get('request')
+        if request is None:
+            return ''
+        comments_queryset = None
+
+        if request.user.is_staff:
+            comments_queryset = object_instance.comments.all()
+        else:
+            comments_queryset = object_instance.comments.visible()        
+        
+        comments_queryset = comments_queryset.select_related("user").order_by('submit_date')[sIndex:lIndex]
+        return comments_queryset
+
+@register.tag
+def get_comments_subset(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 6:
+        raise TemplateSyntaxError("Accepted format "
+                                  "{% get_comments_subset [object_instance] sIndex lIndex as comments %}")
+    else:
+        return GetCommentsSubsetForObj.handle_token(parser, token)
+

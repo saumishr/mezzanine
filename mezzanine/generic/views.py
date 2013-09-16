@@ -194,6 +194,24 @@ def fetch_comments_on_obj(request, content_type_id, object_id):
        'comments_for_thread': comments_queryset, 
     }, context_instance=RequestContext(request))
 
+def fetch_range_comments_on_obj(request, content_type_id, object_id, sIndex, lIndex ):
+    ctype = get_object_or_404(ContentType, pk=content_type_id)
+    parent = get_object_or_404(ctype.model_class(), pk=object_id)
+
+    if request.user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
+
+    s = (int)(""+sIndex)
+    l = (int)(""+lIndex)
+    
+    comments_queryset =  comments_queryset.select_related("user").order_by('submit_date')[s:l]
+
+    return render_to_response('generic/includes/subcomment.html', {
+       'comments_for_thread': comments_queryset, 
+    }, context_instance=RequestContext(request))
+
 def rating(request):
     """
     Handle a ``RatingForm`` submission and redirect back to its
