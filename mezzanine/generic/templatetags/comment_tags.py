@@ -451,8 +451,8 @@ class GetCommentsSubsetForObj(AsNode):
         else:
             comments_queryset = object_instance.comments.visible()        
         
-        comments_queryset = comments_queryset.select_related("user").order_by('submit_date')[sIndex:lIndex]
-        return comments_queryset
+        comments_queryset = comments_queryset.select_related("user").order_by('-submit_date')[sIndex:lIndex]
+        return list(comments_queryset)[::-1]
 
 @register.tag
 def get_comments_subset(parser, token):
