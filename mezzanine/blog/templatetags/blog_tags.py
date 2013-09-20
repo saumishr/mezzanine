@@ -8,11 +8,11 @@ from mezzanine.generic.models import Keyword
 from mezzanine import template
 from mezzanine.utils.models import get_user_model
 from django.template.defaultfilters import slugify
+from django.utils import simplejson
 
 User = get_user_model()
 
 register = template.Library()
-
 
 @register.as_tag
 def blog_months(*args):
@@ -46,6 +46,19 @@ def blog_categories_abs(*args):
     """
     categories = BlogCategory.objects.all()
     return list(categories)
+
+@register.assignment_tag
+def blog_categories_json(*args):
+    """
+    Put a list of categories for blog posts into the template context.
+    """
+    parent_categories = BlogParentCategory.objects.all()
+    categories = {}
+    for parent_category in parent_categories:
+        sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category)
+        categories[parent_category.slug] = [sub_category.slug for sub_category in sub_categories]
+    return  simplejson.dumps(categories)
+
 
 @register.as_tag
 def blog_parentcategories_abs(*args):
