@@ -183,6 +183,9 @@
     height: 70px;
     margin-top: 15px;
   }
+  .bottomHalfGutter {
+    margin-bottom: 15px;
+  }
   .offset12 {
     margin-left: 1230px;
   }
@@ -546,6 +549,9 @@
   .span1Height {
     height: 42px;
     margin-top: 10px;
+  }
+  .bottomHalfGutter {
+    margin-bottom: 10px;
   }
   .offset12 {
     margin-left: 764px;
