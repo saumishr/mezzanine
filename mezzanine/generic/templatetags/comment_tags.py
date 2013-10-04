@@ -82,7 +82,7 @@ def comments_for(context, obj, css_class=None):
     context["object_for_comments"] = obj
     return context
 
-@register.inclusion_tag("generic/includes/comments.html", takes_context=True)
+@register.inclusion_tag("generic/includes/comments_on_objects.html", takes_context=True)
 def comments_for_review(context, obj, css_class=None):
     """
     Provides a generic context variable name for the object that
@@ -92,6 +92,7 @@ def comments_for_review(context, obj, css_class=None):
     if css_class:
         form.fields['comment'].widget.attrs['class'] = css_class
     form.fields['comment'].widget.attrs['placeholder'] = 'Write a comment...'
+    form.fields['comment'].widget.attrs['cols'] = 70
     form.fields['comment'].label = ""
     context["posted_comment_form"] = form
     context["unposted_comment_form"] = form
