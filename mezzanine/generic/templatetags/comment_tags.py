@@ -93,6 +93,7 @@ def comments_for_review(context, obj, css_class=None):
         form.fields['comment'].widget.attrs['class'] = css_class
     form.fields['comment'].widget.attrs['placeholder'] = 'Write a comment...'
     form.fields['comment'].widget.attrs['cols'] = 70
+    form.fields['comment'].widget.attrs['rows'] = 1
     form.fields['comment'].label = ""
     context["posted_comment_form"] = form
     context["unposted_comment_form"] = form
