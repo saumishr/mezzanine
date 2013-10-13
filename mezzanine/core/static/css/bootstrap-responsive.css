@@ -109,6 +109,24 @@
 }
 
 @media (min-width: 1200px) {
+  .row {
+    margin-left: -30px;
+    *zoom: 1;
+  }
+  .row:before,
+  .row:after {
+    display: table;
+    line-height: 0;
+    content: "";
+  }
+  .row:after {
+    clear: both;
+  }
+  [class*="span"] {
+    float: left;
+    min-height: 1px;
+    margin-left: 30px;
+  }
   .fullGutter {
     margin-left: 30px;
   }
@@ -132,24 +150,6 @@
   }
   .halfGutterInsetRight{
     padding-right: 12px;
-  }
-  .row {
-    margin-left: -30px;
-    *zoom: 1;
-  }
-  .row:before,
-  .row:after {
-    display: table;
-    line-height: 0;
-    content: "";
-  }
-  .row:after {
-    clear: both;
-  }
-  [class*="span"] {
-    float: left;
-    min-height: 1px;
-    margin-left: 30px;
   }
   .container,
   .navbar-static-top .container,
@@ -497,6 +497,24 @@
 }
 
 @media (min-width: 768px) and (max-width: 979px) {
+  .row {
+    margin-left: -20px;
+    *zoom: 1;
+  }
+  .row:before,
+  .row:after {
+    display: table;
+    line-height: 0;
+    content: "";
+  }
+  .row:after {
+    clear: both;
+  }
+  [class*="span"] {
+    float: left;
+    min-height: 1px;
+    margin-left: 20px;
+  }
   .fullGutter {
     margin-left: 20px;
   }
@@ -520,24 +538,6 @@
   }
   .halfGutterInsetRight{
     padding-right: 8px;
-  }
-  .row {
-    margin-left: -20px;
-    *zoom: 1;
-  }
-  .row:before,
-  .row:after {
-    display: table;
-    line-height: 0;
-    content: "";
-  }
-  .row:after {
-    clear: both;
-  }
-  [class*="span"] {
-    float: left;
-    min-height: 1px;
-    margin-left: 20px;
   }
   .container,
   .navbar-static-top .container,
