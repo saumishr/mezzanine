@@ -35,7 +35,8 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
 
     admin_thumb_field = "featured_image"
     num_images    = models.PositiveIntegerField(verbose_name="Photos Uploaded", default=0)
-    
+    web_url = models.URLField(verify_exists=True, max_length=200, null=True, blank=True)
+
     class Meta:
         verbose_name = _("Blog post")
         verbose_name_plural = _("Blog posts")

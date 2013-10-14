@@ -13,6 +13,7 @@ from django.contrib.auth.models import Group
 
 blogpost_fieldsets = deepcopy(DisplayableAdmin.fieldsets)
 blogpost_fieldsets[0][1]["fields"].insert(1, "categories")
+blogpost_fieldsets[0][1]["fields"].extend(["web_url"])
 blogpost_fieldsets[0][1]["fields"].extend(["content", "allow_comments"])
 blogpost_list_display = ["title", "user", "status", "admin_link"]
 if settings.BLOG_USE_FEATURED_IMAGE:
