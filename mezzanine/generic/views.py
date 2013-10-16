@@ -3,7 +3,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.messages import error
 from django.core.urlresolvers import reverse
 from django.db.models import get_model, ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.utils import simplejson
 from django.utils.simplejson import dumps
@@ -145,7 +145,7 @@ def comment_on_review(request, template="generic/comments.html"):
             return redirect(url)  
         comment = form.save(request)
         if request.is_ajax():
-            comment = form.save(request)
+            #comment = form.save(request)
             comments = [comment]
 
             html = render_to_string('generic/includes/subcomment.html', { 'comments_for_thread': comments }) 
@@ -247,6 +247,64 @@ def commentProfile(request, username):
               reverse("mezzanine.accounts.views.profile", 
                       args=[username]))
 
+def edit_review(request, review_id, template="generic/includes/edit_review.html"):
+    if not review_id :
+        raise Http404()
+
+    review_obj = Review.objects.get(id=review_id)
+
+    if review_obj and review_obj.user != request.user:
+        raise Http404()
+
+    context = RequestContext(request)
+
+    parent_obj = review_obj.content_object
+
+    if request.method == 'POST':
+        form = ReviewForm(request, parent_obj, request.POST )
+
+        if form.is_valid():
+                url = review_obj.get_absolute_url()
+                if is_spam(request, form, url):
+                    return redirect(url)
+
+                review_obj.comment          = form.cleaned_data['comment']
+                review_obj.title            = form.cleaned_data['title']
+                review_obj.overall_value    = form.cleaned_data['overall_value']
+                review_obj.price_value      = form.cleaned_data['price_value']
+                review_obj.variety_value    = form.cleaned_data['variety_value']
+                review_obj.quality_value    = form.cleaned_data['quality_value']
+                review_obj.service_value    = form.cleaned_data['service_value']
+                review_obj.exchange_value   = form.cleaned_data['exchange_value']
+                review_obj.shop_again       = form.cleaned_data['shop_again']
+                review_obj.bought_category  = form.cleaned_data['category']
+                review_obj.save()
+
+                response = redirect(add_cache_bypass(review_obj.get_absolute_url()))
+    else:        
+        data = {
+                    "comment"           : review_obj.comment,
+                    "title"             : review_obj.title,
+                    "overall_value"     : review_obj.overall_value,
+                    "price_value"       : review_obj.price_value,
+                    "variety_value"     : review_obj.price_value,
+                    "quality_value"     : review_obj.quality_value,
+                    "service_value"     : review_obj.service_value,
+                    "exchange_value"    : review_obj.exchange_value,
+                    "shop_again"        : review_obj.shop_again,
+                    "category"          : review_obj.bought_category
+        }
+
+        form = ReviewForm(request, parent_obj, initial=data)
+        action_url = reverse("edit_review", kwargs={'review_id':review_id})
+        context = {
+                    "posted_comment_form": form,
+                    "edit_review_url":action_url
+                  }
+        response =  render(request, template, context)
+
+    return response
+
 def comment_thread_most_liked_view(request, obj, template="generic/includes/comments_most_liked.html"):
     """
     Return a list of child comments for the given parent, storing all
@@ -254,8 +312,6 @@ def comment_thread_most_liked_view(request, obj, template="generic/includes/comm
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ReviewForm
-
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
@@ -275,8 +331,6 @@ def comment_thread_most_recent_view(request, obj, template="generic/includes/com
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ReviewForm
-
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
@@ -297,8 +351,6 @@ def comment_thread_default_view(request, obj, template="generic/includes/comment
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ReviewForm
-
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
@@ -319,8 +371,6 @@ def comment_thread_social_view(request, obj, template="generic/includes/comments
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ReviewForm
-
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
@@ -341,7 +391,6 @@ def comment_thread_social_view_level2(request, obj, template="generic/includes/c
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from mezzanine.generic.forms import ReviewForm
 
     parent = BlogPost.objects.get(id=obj)
     context = RequestContext(request)
