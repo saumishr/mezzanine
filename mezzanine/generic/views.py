@@ -127,6 +127,62 @@ def comment(request, template="generic/comments.html"):
     return response
 
 @login_required
+def write_review(request, content_type_id, object_id, template="generic/includes/write_review.html"):
+	ctype = get_object_or_404(ContentType, pk=content_type_id)
+	parent = get_object_or_404(ctype.model_class(), pk=object_id)
+	
+	if request.method == 'POST':
+		response = initial_validation(request, "write_review")
+		if isinstance(response, HttpResponse):
+		    return response
+		obj, post_data = response
+
+		form = ReviewForm(request, obj, request.POST)
+		if form.is_valid():
+			url = obj.get_absolute_url()
+			if is_spam(request, form, url):
+				return redirect(url)  
+			comment = form.save(request)
+
+			"""
+				Send activity feed to those who follow this vendor page.
+			"""
+			if request.user.is_authenticated():
+				action.send(obj, verb=settings.GOT_REVIEW_VERB, target=comment )
+
+			if request.is_ajax():
+				comments = [comment]
+
+				html = render_to_string('generic/includes/comment.html', { 'comments_for_thread': comments, 'request':request }) 
+				res = {'html': html,
+					   'success':True}
+				response = HttpResponse( simplejson.dumps(res), 'application/json' )
+				# Store commenter's details in a cookie for 90 days.
+				for field in ReviewForm.cookie_fields:
+					cookie_name = ReviewForm.cookie_prefix + field
+					cookie_value = post_data.get(field, "")
+					set_cookie(response, cookie_name, cookie_value)	
+								
+				return response
+			else:
+				response = redirect(add_cache_bypass(comment.get_absolute_url()))
+				return response
+
+		elif request.is_ajax() and form.errors:
+			return HttpResponse( simplejson.dumps({"errors": form.errors,
+										"success":False}), 'application/json')		
+	else:
+		form = ReviewForm(request, parent)
+		context = {"obj": parent, "posted_comment_form": form, "comment_url": reverse("write_review", kwargs={
+																												'content_type_id':content_type_id,
+																												'object_id':object_id
+																											})}
+		response = render(request, template, context)
+		return response
+
+
+
+@login_required
 def comment_on_review(request, template="generic/comments.html"):
     """
     Handle a ``ThreadedCommentForm`` submission and redirect back to its
@@ -281,6 +337,8 @@ def edit_review(request, review_id, template="generic/includes/edit_review.html"
                 review_obj.save()
 
                 response = redirect(add_cache_bypass(review_obj.get_absolute_url()))
+        elif form.errors:
+        	return HttpResponse(dumps({"errors": form.errors}))
     else:        
         data = {
                     "comment"           : review_obj.comment,

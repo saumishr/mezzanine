@@ -370,6 +370,24 @@ def get_class_name(value):
     return value.__class__.__name__
 
 @register.tag
+def write_review_for_obj_url(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 2:
+        raise TemplateSyntaxError("Accepted format {% write_review_for_obj_url [instance] %}")
+    else:
+        return ReviewForObjURL(bits[1])
+
+class ReviewForObjURL(Node):
+    def __init__(self, obj):
+        self.obj = Variable(obj)
+
+    def render(self, context):
+        obj_instance = self.obj.resolve(context)
+        content_type = ContentType.objects.get_for_model(obj_instance).pk
+        return reverse('write_review', kwargs={'content_type_id': content_type, 'object_id': obj_instance.pk })
+
+
+@register.tag
 def comments_for_obj_url(parser, token):
     bits = token.split_contents()
     if len(bits) != 2:
