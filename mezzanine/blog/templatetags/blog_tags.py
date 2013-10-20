@@ -56,7 +56,7 @@ def blog_categories_json(*args):
     categories = {}
     for parent_category in parent_categories:
         sub_categories = BlogCategory.objects.all().filter(parent_category=parent_category)
-        categories[parent_category.slug] = [sub_category.slug for sub_category in sub_categories]
+        categories[parent_category.title] = [sub_category.title for sub_category in sub_categories]
     return  simplejson.dumps(categories)
 
 
