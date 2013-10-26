@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 
 from mezzanine.conf import settings
 from mezzanine.core.fields import FileField
-from mezzanine.core.models import Displayable, Ownable, RichText, Slugged
+from mezzanine.core.models import Displayable, Ownable, RichText, Slugged, UniqueSlugged
 from mezzanine.generic.fields import CommentsField, RatingField, ReviewsField, RequiredReviewRatingField, OptionalReviewRatingField
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 from django.db import models
@@ -94,7 +94,7 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
 
 utils.register(BlogPost)
 
-class BlogCategory(Slugged):
+class BlogCategory(UniqueSlugged):
     """
     A category for grouping blog posts into a series.
     """
@@ -112,7 +112,7 @@ class BlogCategory(Slugged):
         return (url_name, (), kwargs)
 
 
-class BlogParentCategory(Slugged):
+class BlogParentCategory(UniqueSlugged):
     """
     A category for grouping blog posts into a series.
     """

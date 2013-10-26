@@ -101,7 +101,59 @@ class Slugged(SiteRelated):
     admin_link.allow_tags = True
     admin_link.short_description = ""
 
+class UniqueSlugged(SiteRelated):
+    """
+    Abstract model that handles auto-generating slugs. Each slugged
+    object is also affiliated with a specific site object.
+    """
 
+    title = models.CharField(_("Title"), max_length=500, unique=True)
+    slug = models.CharField(_("URL"), max_length=2000, blank=True, null=True,
+            help_text=_("Leave blank to have the URL auto-generated from "
+                        "the title."), unique=True)
+    class Meta:
+        abstract = True
+
+    def __unicode__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        """
+        Create a unique slug by appending an index.
+        """
+        if not self.slug:
+            self.slug = self.get_slug()
+        # For custom content types, use the ``Page`` instance for
+        # slug lookup.
+        concrete_model = base_concrete_model(UniqueSlugged, self)
+        i = 0
+        while True:
+            if i > 0:
+                if i > 1:
+                    self.slug = self.slug.rsplit("-", 1)[0]
+                self.slug = "%s-%s" % (self.slug, i)
+            qs = concrete_model.objects.all()
+            if self.id is not None:
+                qs = qs.exclude(id=self.id)
+            try:
+                qs.get(slug=self.slug)
+            except ObjectDoesNotExist:
+                break
+            i += 1
+        super(UniqueSlugged, self).save(*args, **kwargs)
+
+    def get_slug(self):
+        """
+        Allows subclasses to implement their own slug creation logic.
+        """
+        return slugify(self.title)
+
+    def admin_link(self):
+        return "<a href='%s'>%s</a>" % (self.get_absolute_url(),
+                                        ugettext("View on site"))
+    admin_link.allow_tags = True
+    admin_link.short_description = ""
+    
 class MetaData(models.Model):
     """
     Abstract model that provides meta data for content.
