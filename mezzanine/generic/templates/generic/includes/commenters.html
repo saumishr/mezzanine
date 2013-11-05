@@ -5,7 +5,7 @@
 
 {% block content %}
 {% if not is_incremental %}
-<div class="scrollContainer" style="min-width:500px;max-height:100px;overflow:auto;" data-href="{{data_href}}" data-chunk="5">
+<div class="scrollContainer" style="min-width:500px;max-height:500px;overflow:auto;" data-href="{{data_href}}" data-chunk="5">
 {% endif %}
 <table>
 {% for commenter in commenters %}
