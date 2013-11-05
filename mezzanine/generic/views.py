@@ -23,6 +23,7 @@ from mezzanine.utils.views import render, set_cookie, is_spam
 from mezzanine.blog.models import BlogPost
 
 from actstream import action
+import json
 
 @staff_member_required
 def admin_keywords_submit(request):
@@ -234,6 +235,58 @@ def fetch_commenters_on_obj(request, content_type_id, object_id):
     return render_to_response('generic/includes/commenters.html', {
        'commenters': commenters, 
     }, context_instance=RequestContext(request))
+
+def fetch_range_commenters_on_obj(request, content_type_id, object_id, sIndex=0, lIndex=0):
+    ctype = get_object_or_404(ContentType, pk=content_type_id)
+    parent = get_object_or_404(ctype.model_class(), pk=object_id)
+
+    if request.user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
+
+    commenter_ids =  comments_queryset.select_related("user").order_by('-submit_date').values_list('user', flat=True)
+    commenters = User.objects.all().filter(id__in=set(commenter_ids))
+
+    template = 'generic/includes/commenters.html'
+
+    s = (int)(""+sIndex)
+    l = (int)(""+lIndex)
+
+    sub_commenters = commenters[s:l]
+
+    if s == 0:
+        data_href = reverse('fetch_range_commenters_on_obj', kwargs={ 'content_type_id':content_type_id,
+                                                                    'object_id':object_id,
+                                                                    'sIndex':0,
+                                                                    'lIndex': settings.MIN_COMMENTERS_CHUNK})
+        return render_to_response(template, {
+            'commenters': sub_commenters,
+            'is_incremental': False,
+            'data_href':data_href
+        }, context_instance=RequestContext(request))
+
+
+    if request.is_ajax():
+        context = RequestContext(request)
+        context.update({'commenters': sub_commenters,
+						'is_incremental': True})
+        if sub_commenters:
+            ret_data = {
+                'html': render_to_string(template, context_instance=context).strip(),
+                'success': True
+            }
+        else:
+            ret_data = {
+                'success': False
+            }
+
+        return HttpResponse(json.dumps(ret_data), mimetype="application/json")
+
+    else:
+	    return render_to_response(template, {
+	       'commenters': sub_commenters, 
+	    }, context_instance=RequestContext(request))
 
 def fetch_comments_on_obj(request, content_type_id, object_id):
     ctype = get_object_or_404(ContentType, pk=content_type_id)

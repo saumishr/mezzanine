@@ -440,6 +440,25 @@ class GetCommentersForObjURL(Node):
         content_type = ContentType.objects.get_for_model(obj_instance).pk
         return reverse('fetch_commenters_on_obj', kwargs={'content_type_id': content_type, 'object_id': obj_instance.pk })
 
+class CommentersRangeForObjURL(AsNode):
+    def render_result(self, context):
+        object_instance = self.args[0].resolve(context)
+        sIndex = self.args[1].resolve(context)
+        lIndex = self.args[2].resolve(context)
+        content_type = ContentType.objects.get_for_model(object_instance).pk
+        
+        return reverse('fetch_range_commenters_on_obj', kwargs={
+            'content_type_id': content_type, 'object_id': object_instance.pk, 'sIndex':sIndex, 'lIndex':lIndex})
+
+@register.tag
+def get_range_commenters_url(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 6:
+        raise TemplateSyntaxError("Accepted format "
+                                  "{% get_range_commenters_url [object_instance] sIndex lIndex as commenters_range_url %}")
+    else:
+        return CommentersRangeForObjURL.handle_token(parser, token)
+
 @register.inclusion_tag("generic/includes/render_comment.html", takes_context=True)
 def render_comment(context, comment):
     context.update({
