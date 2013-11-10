@@ -103,10 +103,20 @@ def get_vendors_all(request):
     url += "all/all/"
     return HttpResponseRedirect(url)
 
+def is_valid_search_filter(filterstr):
+    valid_filters = ['price', 'variety', 'quality', 'service', 'exchange', 'overall']
+    if filterstr.lower() in valid_filters:
+        return True
+    return False
+
 def get_vendors(request, parent_category_slug, sub_category_slug, template="blog/search_results.html"):
     if request.method == "GET":
         #parsedURL = urlparse.urlparse(request.path)
         #pathlist = parsedURL.path.split("/")
+        filters = request.GET.get("filter", '')
+        filter_arr = []
+        if filters != '':
+            filter_arr = filters.split('-')
 
         blog_parentcategory = None
         """
@@ -130,26 +140,48 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
                 raise Http404()
 
         if blog_parentcategory_slug.lower() == "all" and blog_subcategory_slug.lower() == "all":
-            results = BlogPost.objects.published().order_by('-overall_average')
+            results = BlogPost.objects.published()
         elif blog_parentcategory_slug.lower() != "all" and blog_subcategory_slug.lower() == "all":
             if blog_parentcategory:
                 blog_subcategories = list(BlogCategory.objects.all().filter(parent_category=blog_parentcategory))
-                results = BlogPost.objects.published().filter(categories__in=blog_subcategories).distinct().order_by('-overall_average')
+                results = BlogPost.objects.published().filter(categories__in=blog_subcategories).distinct()
         else:
             if blog_subcategory and blog_parentcategory:
-                results = BlogPost.objects.published().filter(categories=blog_subcategory).order_by('-overall_average')
+                results = BlogPost.objects.published().filter(categories=blog_subcategory)
             else:
             	"""
                 raise 404 error, in case categories are not present.
                 """
                 raise Http404()
 
+        field_sum = ''
+        if len(filter_arr) > 0:
+            for i in range(len(filter_arr)):
+                if is_valid_search_filter(filter_arr[i]):
+                    if i == 0:
+                        field_sum += filter_arr[i].lower()+'_average'
+                    else:
+                        field_sum += '+' + filter_arr[i].lower()+'_average'
+
+        if field_sum != '': 
+        	'''
+        	If filters are apllied, order vendors by sum of the filter parameter values.
+        	In case filter values are equal, order them as per their overall average.
+        	For now tie between equal overall_average is not broken. To break add more parameters ahead in order of priority.
+        	'''
+        	filtered_results = results.extra(select={'fieldsum': field_sum}, order_by=('-fieldsum', '-overall_average',))
+        else:
+        	'''
+        		In absence of any filters, order vendors by overall_average by default.
+        	'''
+        	filtered_results = results.order_by('-overall_average')
+
         settings.use_editable()
         page = request.GET.get("page", 1)
         per_page = settings.SEARCH_PER_PAGE
         max_paging_links = settings.MAX_PAGING_LINKS
 
-        paginated = paginate(results, page, per_page, max_paging_links)
+        paginated = paginate(filtered_results, page, per_page, max_paging_links)
         context = {"results": paginated,
                     "parent_category": parent_category_slug,
                     "sub_category": sub_category_slug,}
