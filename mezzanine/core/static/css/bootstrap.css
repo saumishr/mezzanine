@@ -375,6 +375,9 @@ a:focus {
 .topHalfGutter {
   margin-top: 10px;
 }
+.topHalfGutterPadding {
+    padding-top: 10px;
+  }
 .bottomHalfGutter {
   margin-bottom: 10px;
 }

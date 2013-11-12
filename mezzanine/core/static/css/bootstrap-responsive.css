@@ -204,6 +204,9 @@
   .topHalfGutter {
     margin-top: 15px;
   }
+  .topHalfGutterPadding {
+    padding-top: 15px;
+  }
   .bottomHalfGutter {
     margin-bottom: 15px;
   }
@@ -591,6 +594,9 @@
   }
   .topHalfGutter {
     margin-top: 10px;
+  }
+  .topHalfGutterPadding {
+    padding-top: 10px;
   }
   .bottomHalfGutter {
     margin-bottom: 10px;
