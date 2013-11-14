@@ -295,6 +295,9 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
             for category in categories:
                 CHOICES = CHOICES + [(str(category), str(category)) ]
             self.fields['category'] = forms.ChoiceField(label = _("Bought a: "), help_text=_(""), choices=CHOICES)
+            self.fields.insert(0, "title", self.fields.pop("title"))
+            self.fields["title"].widget.attrs["class"] = "blockLabel"
+            self.fields["comment"].widget.attrs["class"] = "blockLabel"
         
 class RatingForm(CommentSecurityForm):
     """
