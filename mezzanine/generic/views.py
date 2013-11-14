@@ -174,7 +174,7 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 										"success":False}), 'application/json')		
 	else:
 		form = ReviewForm(request, parent)
-		context = {"obj": parent, "posted_comment_form": form, "comment_url": reverse("write_review", kwargs={
+		context = {"obj": parent, "posted_comment_form": form, "action_url": reverse("write_review", kwargs={
 																												'content_type_id':content_type_id,
 																												'object_id':object_id
 																											})}
@@ -356,7 +356,7 @@ def commentProfile(request, username):
               reverse("mezzanine.accounts.views.profile", 
                       args=[username]))
 
-def edit_review(request, review_id, template="generic/includes/edit_review.html"):
+def edit_review(request, review_id, template="generic/includes/write_review.html"):
     if not review_id :
         raise Http404()
 
@@ -410,7 +410,7 @@ def edit_review(request, review_id, template="generic/includes/edit_review.html"
         action_url = reverse("edit_review", kwargs={'review_id':review_id})
         context = {
                     "posted_comment_form": form,
-                    "edit_review_url":action_url
+                    "action_url":action_url
                   }
         response =  render(request, template, context)
 
