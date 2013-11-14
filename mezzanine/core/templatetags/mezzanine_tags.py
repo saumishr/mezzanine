@@ -106,6 +106,14 @@ def fields_for(context, form):
     context["form_for_fields"] = form
     return context
 
+@register.inclusion_tag("includes/form_fields_review.html", takes_context=True)
+def fields_for_review(context, form):
+    """
+    Renders fields for a Review form.
+    """
+    context["form_for_fields"] = form
+    return context
+
 @register.filter
 def sort_by(items, attr):
     """
