@@ -94,7 +94,7 @@ class BlogPost(Displayable, Ownable, RichText, AdminThumbMixin):
 
 utils.register(BlogPost)
 
-class BlogCategory(UniqueSlugged):
+class BlogCategory(Slugged):
     """
     A category for grouping blog posts into a series.
     """
