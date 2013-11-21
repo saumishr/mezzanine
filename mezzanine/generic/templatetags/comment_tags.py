@@ -137,19 +137,28 @@ def comment_thread_most_recent(context, parent):
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    import operator
-    if "all_comments" not in context:
-        comments = defaultdict(list)
-        if "request" in context and context["request"].user.is_staff:
-            comments_queryset = parent.comments.all()
-        else:
-            comments_queryset = parent.comments.visible()
+    incremental_fetch = False
+    if 'sIndex' in context and 'lIndex' in context:
+        incremental_fetch = True
 
-        commentsList = comments_queryset.order_by('-submit_date')
-        for comment in commentsList.select_related("user"):
-            comments[comment.replied_to_id].append(comment)
-  
-        context["all_comments"] = comments
+    if incremental_fetch:
+        sIndex = context["sIndex"]
+        lIndex = context["lIndex"]
+
+        s = (int)(""+sIndex)
+        l = (int)(""+lIndex)
+
+    comments = None
+    if "request" in context and context["request"].user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
+
+
+    comments = comments_queryset.select_related("user").order_by('-submit_date')
+
+    if incremental_fetch:  
+        comments = comments[s:l]
 
     parent_id = parent.id if isinstance(parent, Review) else None
     
@@ -157,8 +166,9 @@ def comment_thread_most_recent(context, parent):
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
         replied_to = 0
+
     context.update({
-        "comments_for_thread": context["all_comments"].get(parent_id, []),
+        "comments_for_thread": comments,
         "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
@@ -173,34 +183,48 @@ def comment_thread_most_liked(context, parent):
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    import operator
+
     from django.db.models import Count, Min
-    if "all_comments" not in context:
-        comments = defaultdict(list)
-        if "request" in context and context["request"].user.is_staff:
-            comments_queryset = parent.comments.all()
-        else:
-            comments_queryset = parent.comments.visible()
 
-        model_type = ContentType.objects.get_for_model(Review)
-        table_name = Comment._meta.db_table
+    incremental_fetch = False
+    if 'sIndex' in context and 'lIndex' in context:
+        incremental_fetch = True
 
-        commentsList = comments_queryset.extra(select={
-            'score': 'SELECT COALESCE(SUM(vote),0) FROM %s WHERE content_type_id=%d AND object_id=%s.id' % (Vote._meta.db_table, int(model_type.id), table_name)
-        }).order_by('-score',)
+    if incremental_fetch:
+        sIndex = context["sIndex"]
+        lIndex = context["lIndex"]
 
-        for comment in commentsList.select_related("user"):
-            comments[comment.replied_to_id].append(comment)
+        s = (int)(""+sIndex)
+        l = (int)(""+lIndex)
+
+
+    comments = None
+    if "request" in context and context["request"].user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
+
+    model_type = ContentType.objects.get_for_model(Review)
+    table_name = Comment._meta.db_table
+
+    commentsList = comments_queryset.extra(select={
+        'score': 'SELECT COALESCE(SUM(vote),0) FROM %s WHERE content_type_id=%d AND object_id=%s.id' % (Vote._meta.db_table, int(model_type.id), table_name)
+    }).order_by('-score',)
+
+    comments = commentsList.select_related("user")
+
+    if incremental_fetch:  
+        comments = comments[s:l]
  
-        context["all_comments"] = comments
     parent_id = parent.id if isinstance(parent, Review) else None
     try:
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
         replied_to = 0
+
     context.update({
-        "comments_for_thread": context["all_comments"].get(parent_id, []),
-        "no_comments": parent_id is None and not context["all_comments"],
+        "comments_for_thread": comments,
+        "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
     return context
@@ -217,39 +241,52 @@ def comment_thread_social(context, parent):
     from social_friends_finder.models import SocialFriendList
     from django.http import HttpResponse
 
-    if "all_comments" not in context:
-        comments = defaultdict(list)
-        if "request" in context and context["request"].user.is_staff:
-            comments_queryset = parent.comments.all()
-        else:
-            comments_queryset = parent.comments.visible()
+    incremental_fetch = False
+    if 'sIndex' in context and 'lIndex' in context:
+        incremental_fetch = True
 
-        comments_queryset = comments_queryset.order_by('-submit_date')
+    if incremental_fetch:
+        sIndex = context["sIndex"]
+        lIndex = context["lIndex"]
 
-        #user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
-        #if not user_social_auth_list:
-        #    user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
-        #if user_social_auth_list:
-        #    user_social_auth = user_social_auth_list[0]    
-        #    friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
-        #    for comment in comments_queryset.select_related("user"):
-        #        if comment.user in friends:
-        #            comments[comment.replied_to_id].append(comment)
-        
-        friends = context["request"].user.relationships.following()
-        for comment in comments_queryset.select_related("user"):
-            if comment.user in friends:
-                comments[comment.replied_to_id].append(comment)
+        s = (int)(""+sIndex)
+        l = (int)(""+lIndex)
 
-        context["all_comments"] = comments
+
+    comments = None
+
+    if "request" in context and context["request"].user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
+
+    comments_queryset = comments_queryset.order_by('-submit_date')
+
+    #user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
+    #if not user_social_auth_list:
+    #    user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
+    #if user_social_auth_list:
+    #    user_social_auth = user_social_auth_list[0]    
+    #    friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
+    #    for comment in comments_queryset.select_related("user"):
+    #        if comment.user in friends:
+    #            comments[comment.replied_to_id].append(comment)
+    
+    friends = context["request"].user.relationships.following()
+    comments = comments_queryset.select_related("user").filter(user__in=friends)
+
+    if incremental_fetch:  
+        comments = comments[s:l]
+
     parent_id = parent.id if isinstance(parent, Review) else None
     try:
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
         replied_to = 0
+
     context.update({
-        "comments_for_thread": context["all_comments"].get(parent_id, []),
-        "no_comments": parent_id is None and not context["all_comments"],
+        "comments_for_thread": comments,
+        "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
     return context
@@ -269,51 +306,61 @@ def comment_thread_social_level2(context, parent):
     from operator import attrgetter
     from django.core.cache import cache
 
-    if "all_comments" not in context:
-        comments = defaultdict(list)
-        if "request" in context and context["request"].user.is_staff:
-            comments_queryset = parent.comments.all()
-        else:
-            comments_queryset = parent.comments.visible()
+    incremental_fetch = False
+    if 'sIndex' in context and 'lIndex' in context:
+        incremental_fetch = True
 
-        #user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
-        #if not user_social_auth_list:
-        #    user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
-        #if user_social_auth_list:
-        #    user_social_auth = user_social_auth_list[0]
-        #    if user_social_auth:
-        #        friends_of_friends = cache.get(user_social_auth.user.username+"SocialFriendListLevel2")
-        #        if  not friends_of_friends:            
-        #            friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
-        #            friends_of_friends = list(friends)
-        #            for friend in friends:
-        #                friends_level2 = SocialFriendList.objects.existing_social_friends(friend.social_auth.filter(provider="facebook")[0])
-        #                friends_of_friends = list(chain(friends_of_friends, friends_level2))
-        #            cache.set(user_social_auth.user.username+"SocialFriendListLevel2", friends_of_friends)
-        friends_of_friends = set()
+    if incremental_fetch:
+        sIndex = context["sIndex"]
+        lIndex = context["lIndex"]
 
-        friends = context["request"].user.relationships.following()
-        for friend in friends:
-            friends_of_friends.add(friend)
-            friends_level2 = friend.relationships.following()
-            for friend_level2 in friends_level2:
-                friends_of_friends.add(friend_level2)
+        s = (int)(""+sIndex)
+        l = (int)(""+lIndex)
 
-        comments_queryset = comments_queryset.order_by('-submit_date')
+    comments = None
+    if "request" in context and context["request"].user.is_staff:
+        comments_queryset = parent.comments.all()
+    else:
+        comments_queryset = parent.comments.visible()
 
-        for comment in comments_queryset.select_related("user"):
-                if comment.user in friends_of_friends:
-                        comments[comment.replied_to_id].append(comment)
- 
-        context["all_comments"] = comments
+    #user_social_auth_list = context["request"].user.social_auth.filter(provider="facebook")
+    #if not user_social_auth_list:
+    #    user_social_auth_list = context["request"].user.social_auth.filter(provider="twitter")
+    #if user_social_auth_list:
+    #    user_social_auth = user_social_auth_list[0]
+    #    if user_social_auth:
+    #        friends_of_friends = cache.get(user_social_auth.user.username+"SocialFriendListLevel2")
+    #        if  not friends_of_friends:            
+    #            friends = SocialFriendList.objects.existing_social_friends(context["request"].user.social_auth.filter(provider="facebook")[0])
+    #            friends_of_friends = list(friends)
+    #            for friend in friends:
+    #                friends_level2 = SocialFriendList.objects.existing_social_friends(friend.social_auth.filter(provider="facebook")[0])
+    #                friends_of_friends = list(chain(friends_of_friends, friends_level2))
+    #            cache.set(user_social_auth.user.username+"SocialFriendListLevel2", friends_of_friends)
+    friends_of_friends = set()
+
+    friends = context["request"].user.relationships.following()
+    for friend in friends:
+        friends_of_friends.add(friend)
+        friends_level2 = friend.relationships.following()
+        for friend_level2 in friends_level2:
+            friends_of_friends.add(friend_level2)
+
+    comments_queryset = comments_queryset.order_by('-submit_date')
+
+    comments = comments_queryset.select_related("user").filter(user__in=friends_of_friends)
+
+    if incremental_fetch:
+        comments = comments[s:l]
+
     parent_id = parent.id if isinstance(parent, Review) else None
     try:
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
         replied_to = 0
     context.update({
-        "comments_for_thread": context["all_comments"].get(parent_id, []),
-        "no_comments": parent_id is None and not context["all_comments"],
+        "comments_for_thread": comments,
+        "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
     return context
