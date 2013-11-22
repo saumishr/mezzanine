@@ -1,4 +1,4 @@
-
+from django import forms
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.messages import error
 from django.core.urlresolvers import reverse
@@ -174,7 +174,14 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 										"success":False}), 'application/json')		
 	else:
 		form = ReviewForm(request, parent)
-		context = {"obj": parent, "posted_comment_form": form, "action_url": reverse("write_review", kwargs={
+		form.fields['overall_value'].widget 	= forms.HiddenInput()
+		form.fields['price_value'].widget 		= forms.HiddenInput()
+		form.fields['variety_value'].widget 	= forms.HiddenInput()
+		form.fields['quality_value'].widget 	= forms.HiddenInput()
+		form.fields['service_value'].widget 	= forms.HiddenInput()
+		form.fields['exchange_value'].widget 	= forms.HiddenInput()
+
+		context = {"new_review":True,  "obj": parent, "posted_comment_form": form, "action_url": reverse("write_review", kwargs={
 																												'content_type_id':content_type_id,
 																												'object_id':object_id
 																											})}
@@ -357,64 +364,92 @@ def commentProfile(request, username):
                       args=[username]))
 
 def edit_review(request, review_id, template="generic/includes/write_review.html"):
-    if not review_id :
-        raise Http404()
+	if not review_id :
+		raise Http404()
 
-    review_obj = Review.objects.get(id=review_id)
+	review_obj = Review.objects.get(id=review_id)
 
-    if review_obj and review_obj.user != request.user:
-        raise Http404()
+	if review_obj and review_obj.user != request.user:
+		raise Http404()
 
-    context = RequestContext(request)
+	context = RequestContext(request)
 
-    parent_obj = review_obj.content_object
+	parent_obj = review_obj.content_object
 
-    if request.method == 'POST':
-        form = ReviewForm(request, parent_obj, request.POST )
+	if request.method == 'POST':
+		form = ReviewForm(request, parent_obj, request.POST )
 
-        if form.is_valid():
-                url = review_obj.get_absolute_url()
-                if is_spam(request, form, url):
-                    return redirect(url)
+		if form.is_valid():
+			url = review_obj.get_absolute_url()
+			if is_spam(request, form, url):
+				return redirect(url)
 
-                review_obj.comment          = form.cleaned_data['comment']
-                review_obj.title            = form.cleaned_data['title']
-                review_obj.overall_value    = form.cleaned_data['overall_value']
-                review_obj.price_value      = form.cleaned_data['price_value']
-                review_obj.variety_value    = form.cleaned_data['variety_value']
-                review_obj.quality_value    = form.cleaned_data['quality_value']
-                review_obj.service_value    = form.cleaned_data['service_value']
-                review_obj.exchange_value   = form.cleaned_data['exchange_value']
-                review_obj.shop_again       = form.cleaned_data['shop_again']
-                review_obj.bought_category  = form.cleaned_data['category']
-                review_obj.save()
+			review_obj.comment          = form.cleaned_data['comment']
+			review_obj.title            = form.cleaned_data['title']
+			review_obj.overall_value    = form.cleaned_data['overall_value']
+			review_obj.price_value      = form.cleaned_data['price_value']
+			review_obj.variety_value    = form.cleaned_data['variety_value']
+			review_obj.quality_value    = form.cleaned_data['quality_value']
+			review_obj.service_value    = form.cleaned_data['service_value']
+			exchange_value   			= form.cleaned_data['exchange_value']
+			"""
+			exchange_value is not a required field. Can contain null data as well. Therefore need to handle it seperately.
+			"""
+			if exchange_value == '':
+				review_obj.exchange_value = None
+			else:
+				review_obj.exchange_value = exchange_value
 
-                response = redirect(add_cache_bypass(review_obj.get_absolute_url()))
-        elif form.errors:
-        	return HttpResponse(dumps({"errors": form.errors}))
-    else:        
-        data = {
-                    "comment"           : review_obj.comment,
-                    "title"             : review_obj.title,
-                    "overall_value"     : review_obj.overall_value,
-                    "price_value"       : review_obj.price_value,
-                    "variety_value"     : review_obj.price_value,
-                    "quality_value"     : review_obj.quality_value,
-                    "service_value"     : review_obj.service_value,
-                    "exchange_value"    : review_obj.exchange_value,
-                    "shop_again"        : review_obj.shop_again,
-                    "category"          : review_obj.bought_category
-        }
+			review_obj.shop_again       = form.cleaned_data['shop_again']
+			review_obj.bought_category  = form.cleaned_data['category']
+			review_obj.save()
 
-        form = ReviewForm(request, parent_obj, initial=data)
-        action_url = reverse("edit_review", kwargs={'review_id':review_id})
-        context = {
-                    "posted_comment_form": form,
-                    "action_url":action_url
-                  }
-        response =  render(request, template, context)
+			if request.is_ajax():
+				comments = [review_obj]
 
-    return response
+				html = render_to_string('generic/includes/comment.html', { 'comments_for_thread': comments, 'request':request }) 
+				res = {'html': html,
+				   		'success':True}
+				response = HttpResponse( simplejson.dumps(res), 'application/json' )
+			else:
+				response = redirect(add_cache_bypass(review_obj.get_absolute_url()))
+
+			return response
+
+		elif form.errors:
+			return HttpResponse(dumps({"errors": form.errors}))
+	else:        
+		data = {
+			"comment"           : review_obj.comment,
+			"title"             : review_obj.title,
+			"overall_value"     : review_obj.overall_value,
+			"price_value"       : review_obj.price_value,
+			"variety_value"     : review_obj.price_value,
+			"quality_value"     : review_obj.quality_value,
+			"service_value"     : review_obj.service_value,
+			"exchange_value"    : review_obj.exchange_value,
+			"shop_again"        : review_obj.shop_again,
+			"category"          : review_obj.bought_category
+		}
+
+		form = ReviewForm(request, parent_obj, initial=data)
+		form.fields['overall_value'].widget 	= forms.HiddenInput()
+		form.fields['price_value'].widget 		= forms.HiddenInput()
+		form.fields['variety_value'].widget 	= forms.HiddenInput()
+		form.fields['quality_value'].widget 	= forms.HiddenInput()
+		form.fields['service_value'].widget 	= forms.HiddenInput()
+		form.fields['exchange_value'].widget 	= forms.HiddenInput()
+
+		action_url = reverse("edit_review", kwargs={'review_id':review_id})
+		context = {
+				"posted_comment_form": form,
+				"action_url":action_url,
+				"new_review":False,
+				"review_id": review_id
+			}
+		response =  render(request, template, context)
+
+	return response
 
 def comment_thread_most_liked_view(request, obj, sIndex=0, lIndex=0, template="generic/includes/comments_most_liked.html"):
     """
