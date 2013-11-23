@@ -294,8 +294,10 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
             CHOICES = [('', _("-Select-"))]
             for category in categories:
                 CHOICES = CHOICES + [(str(category), str(category)) ]
-            self.fields['category'] = forms.ChoiceField(label = _("Bought a: "), help_text=_(""), choices=CHOICES)
+            self.fields['category'] = forms.ChoiceField(label = _("Bought a"), help_text=_(""), choices=CHOICES)
             self.fields.insert(0, "title", self.fields.pop("title"))
+            shop_again_field = self.fields.pop("shop_again")
+            self.fields.insert(len(self.fields), "shop_again", shop_again_field)
             self.fields["title"].widget.attrs["class"] = "blockLabel"
             self.fields["comment"].widget.attrs["class"] = "blockLabel"
         
