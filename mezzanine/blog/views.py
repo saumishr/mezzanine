@@ -140,14 +140,14 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
                 raise Http404()
 
         if blog_parentcategory_slug.lower() == "all" and blog_subcategory_slug.lower() == "all":
-            results = BlogPost.objects.published()
+            results = BlogPost.objects.published().distinct()
         elif blog_parentcategory_slug.lower() != "all" and blog_subcategory_slug.lower() == "all":
             if blog_parentcategory:
                 blog_subcategories = list(BlogCategory.objects.all().filter(parent_category=blog_parentcategory))
                 results = BlogPost.objects.published().filter(categories__in=blog_subcategories).distinct()
         else:
             if blog_subcategory and blog_parentcategory:
-                results = BlogPost.objects.published().filter(categories=blog_subcategory)
+                results = BlogPost.objects.published().filter(categories=blog_subcategory).distinct()
             else:
             	"""
                 raise 404 error, in case categories are not present.
