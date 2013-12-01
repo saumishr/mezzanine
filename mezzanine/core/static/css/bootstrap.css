@@ -356,7 +356,7 @@ a:focus {
   width: 220px;
 }
 
-.span2.5 {
+.span2_5 {
   width: 160px;
 }
 
@@ -364,7 +364,7 @@ a:focus {
   width: 140px;
 }
 
-.span1.5 {
+.span1_5 {
   width: 80px;
 }
 
@@ -1450,9 +1450,9 @@ textarea.span3,
   width: 206px;
 }
 
-input.span2.5,
-textarea.span2.5,
-.uneditable-input.span2.5 {
+input.span2_5,
+textarea.span2_5,
+.uneditable-input.span2_5 {
   width: 160px;
 }
 
@@ -1462,9 +1462,9 @@ textarea.span2,
   width: 126px;
 }
 
-input.span1.5,
-textarea.span1.5,
-.uneditable-input.span1.5 {
+input.span1_5,
+textarea.span1_5,
+.uneditable-input.span1_5 {
   width: 80px;
 }
 
@@ -2226,8 +2226,8 @@ table th[class*="span"],
   margin-left: 0;
 }
 
-.table td.span1.5,
-.table th.span1.5 {
+.table td.span1_5,
+.table th.span1_5 {
   float: none;
   width: 80px;
   margin-left: 0;
@@ -2240,8 +2240,8 @@ table th[class*="span"],
   margin-left: 0;
 }
 
-.table td.span2.5,
-.table th.span2.5 {
+.table td.span2_5,
+.table th.span2_5 {
   float: none;
   width: 160px;
   margin-left: 0;
