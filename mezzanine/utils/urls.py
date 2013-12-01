@@ -63,8 +63,7 @@ def slugify_unicode(s):
             chars.append(" ")
     return re.sub("[-\s]+", "-", "".join(chars).strip()).lower()
 
-
-def login_redirect(request):
+def get_login_redirect_url(request):
     """
     Returns the redirect response for login/signup. Favors:
     - next param
@@ -81,6 +80,16 @@ def login_redirect(request):
             next = reverse(settings.LOGIN_REDIRECT_URL)
         except NoReverseMatch:
             next = "/"
+    return next
+
+def login_redirect(request):
+    """
+    Returns the redirect response for login/signup. Favors:
+    - next param
+    - LOGIN_REDIRECT_URL setting
+    - homepage
+    """
+    next = get_login_redirect_url(request)
     return redirect(next)
 
 
