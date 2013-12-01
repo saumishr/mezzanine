@@ -124,18 +124,22 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
         2nd and 3rd element from last will be sub_category and parent_category respectively.
         """
         blog_parentcategory_slug = parent_category_slug#pathlist[-3]
+        blog_parentcategory_title = _("All")
 
         if blog_parentcategory_slug.lower() != "all" and BlogParentCategory.objects.all().exists():
             try:
                 blog_parentcategory = BlogParentCategory.objects.get(slug=slugify(blog_parentcategory_slug))
+                blog_parentcategory_title = blog_parentcategory.title
             except BlogParentCategory.DoesNotExist:
                 raise Http404()
 
         blog_subcategory = None
         blog_subcategory_slug = sub_category_slug#pathlist[-2]
+        blog_subcategory_title = _("All")
         if blog_subcategory_slug.lower() != "all" and BlogCategory.objects.all().exists():
             try:
                 blog_subcategory = BlogCategory.objects.get(slug=slugify(blog_subcategory_slug))
+                blog_subcategory_title = blog_subcategory.title
             except BlogCategory.DoesNotExist:
                 raise Http404()
 
@@ -184,7 +188,10 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
         paginated = paginate(filtered_results, page, per_page, max_paging_links)
         context = {"results": paginated,
                     "parent_category": parent_category_slug,
-                    "sub_category": sub_category_slug,}
+                    "sub_category": sub_category_slug,
+                    "parent_category_title": blog_parentcategory_title,
+                    "sub_category_title": blog_subcategory_title
+                    }
     	return render(request, template, context)
     else:
     	raise Http404()
