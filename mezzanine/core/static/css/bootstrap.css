@@ -356,8 +356,16 @@ a:focus {
   width: 220px;
 }
 
+.span2.5 {
+  width: 160px;
+}
+
 .span2 {
   width: 140px;
+}
+
+.span1.5 {
+  width: 80px;
 }
 
 .span1 {
@@ -1442,10 +1450,22 @@ textarea.span3,
   width: 206px;
 }
 
+input.span2.5,
+textarea.span2.5,
+.uneditable-input.span2.5 {
+  width: 160px;
+}
+
 input.span2,
 textarea.span2,
 .uneditable-input.span2 {
   width: 126px;
+}
+
+input.span1.5,
+textarea.span1.5,
+.uneditable-input.span1.5 {
+  width: 80px;
 }
 
 input.span1,
@@ -2206,10 +2226,24 @@ table th[class*="span"],
   margin-left: 0;
 }
 
+.table td.span1.5,
+.table th.span1.5 {
+  float: none;
+  width: 80px;
+  margin-left: 0;
+}
+
 .table td.span2,
 .table th.span2 {
   float: none;
   width: 124px;
+  margin-left: 0;
+}
+
+.table td.span2.5,
+.table th.span2.5 {
+  float: none;
+  width: 160px;
   margin-left: 0;
 }
 
