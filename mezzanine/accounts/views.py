@@ -4,16 +4,18 @@ from django.contrib.auth import (authenticate, login as auth_login,
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import info, error
 from django.core.urlresolvers import NoReverseMatch
-from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.utils.translation import ugettext_lazy as _
+from django.template import RequestContext
+from django.utils import simplejson
 
 from mezzanine.utils.models import get_user_model
 from mezzanine.accounts import get_profile_form
 from mezzanine.accounts.forms import LoginForm, PasswordResetForm
 from mezzanine.conf import settings
 from mezzanine.utils.email import send_verification_mail, send_approve_mail
-from mezzanine.utils.urls import login_redirect
+from mezzanine.utils.urls import login_redirect, get_login_redirect_url
 from mezzanine.utils.views import render
 
 
@@ -24,12 +26,27 @@ def login(request, template="accounts/account_login.html"):
     """
     Login form.
     """
+    isAjax = False
     form = LoginForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         authenticated_user = form.save()
         info(request, _("Successfully logged in"))
         auth_login(request, authenticated_user)
-        return login_redirect(request)
+        if request.is_ajax():
+            if  request.user.is_authenticated():
+                next = get_login_redirect_url(request)
+                return HttpResponse(simplejson.dumps(dict(url=next,
+                                                          success=True)))
+            else:
+                return HttpResponse(simplejson.dumps(dict(success=False)))                
+        else:
+            return login_redirect(request)
+    elif form.errors:
+        return HttpResponse(simplejson.dumps(dict(errors=form.errors, success=False)))
+
+    if request.is_ajax():
+        template = "accounts/ajax_account_login.html"
+
     context = {"form": form, "title": _("Log in")}
     return render(request, template, context)
 
