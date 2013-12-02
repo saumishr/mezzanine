@@ -9,7 +9,6 @@ from mezzanine.blog.models import BlogPost, BlogCategory, BlogParentCategory
 from mezzanine.conf import settings
 from mezzanine.core.admin import DisplayableAdmin, OwnableAdmin
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import Group
 
 blogpost_fieldsets = deepcopy(DisplayableAdmin.fieldsets)
 blogpost_fieldsets[0][1]["fields"].insert(1, "categories")
@@ -40,7 +39,10 @@ class BlogPostAdmin(DisplayableAdmin, OwnableAdmin):
         """
         Super class ordering is important here - user must get saved first.
         """
-        if not change and request.user.groups.all().filter(name="StaffUsers").count():
+        if not request.user.groups.all().filter(name="StoreOwners").count() and not request.user.is_superuser:
+            raise ValidationError(_("Unauthorized operation!!"))
+
+        if not change and not request.user.is_superuser:
             blog_posts = BlogPost.objects.published(for_user=request.user).select_related().filter(user=request.user)
             if blog_posts and blog_posts[0]:
                 raise ValidationError(_("'%s' has already registered a vendor page" % request.user))

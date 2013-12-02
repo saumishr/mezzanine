@@ -9,7 +9,6 @@ from mezzanine.conf import settings
 from mezzanine.core.forms import Html5Mixin
 from mezzanine.utils.models import get_user_model
 from mezzanine.utils.urls import slugify
-from django.contrib.auth.models import Group
 
 User = get_user_model()
 
@@ -176,9 +175,7 @@ class ProfileForm(Html5Mixin, forms.ModelForm):
                 user = authenticate(username=user.username,
                                     password=password)
                 user.is_active=True
-                user.is_staff = True
-                group = Group.objects.get(name='StaffUsers') 
-                group.user_set.add(user)
+
         return user
 
     def get_profile_fields_form(self):
