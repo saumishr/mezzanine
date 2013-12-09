@@ -371,7 +371,24 @@ a:focus {
 .span1 {
   width: 60px;
 }
-
+.span0_5{
+    width:45px;
+}
+.span0_25{
+    width:32px;
+}
+.span0_5Height{
+  height: 45px;
+  padding-left: 6px;
+  padding-right: 6px;
+  line-height: 45px;
+}
+.span0_25Height{
+  height: 32px;
+  padding-left: 6px;
+  padding-right: 6px;
+  line-height: 32px;
+}
 .span1HalfGutter {
   width: 60px;
   margin-left: 10px;

@@ -324,9 +324,15 @@ def fetch_range_comments_on_obj(request, content_type_id, object_id, sIndex, lIn
     
     comments_queryset =  comments_queryset.select_related("user").order_by('-submit_date')[s:l]
 
-    return render_to_response('generic/includes/subcomment.html', {
-       'comments_for_thread': list(comments_queryset)[::-1], 
-    }, context_instance=RequestContext(request))
+    small = request.GET.get("small", None)
+    if small:
+        return render_to_response('generic/includes/subcomment_small.html', {
+           'comments_for_thread': comments_queryset, 
+        }, context_instance=RequestContext(request))
+    else:
+        return render_to_response('generic/includes/subcomment.html', {
+            'comments_for_thread': list(comments_queryset)[::-1], 
+        }, context_instance=RequestContext(request))
 
 def rating(request):
     """
