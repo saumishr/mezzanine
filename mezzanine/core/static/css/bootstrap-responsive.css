@@ -219,20 +219,20 @@
   }
   .span1HalfGutter {
     width: 70px;
-    margin-left: 15px;
+    margin-left: 12px;
   }
   .span1Height {
     height: 70px;
-    margin-top: 15px;
+    margin-top: 12px;
   }
   .topHalfGutter {
-    margin-top: 15px;
+    margin-top: 12px;
   }
   .topHalfGutterPadding {
-    padding-top: 15px;
+    padding-top: 12px;
   }
   .bottomHalfGutter {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
   }
   .offset12 {
     margin-left: 1230px;
