@@ -101,6 +101,8 @@ class ProfileForm(Html5Mixin, forms.ModelForm):
                 for field in profile_fields:
                     value = getattr(self.instance.get_profile(), field)
                     self.initial[field] = value
+        profile_photo_field = self.fields.pop("profile_photo")
+        self.fields.insert(len(self.fields), "profile_photo", profile_photo_field)
 
     def clean_username(self):
         """
