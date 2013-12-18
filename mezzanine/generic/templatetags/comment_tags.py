@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import linebreaksbr, urlize
+from django.conf import settings as django_settings
 
 from mezzanine import template
 from mezzanine.conf import settings
@@ -10,6 +11,7 @@ from mezzanine.generic.forms import ThreadedCommentForm
 from mezzanine.generic.forms import ReviewForm
 from mezzanine.generic.models import ThreadedComment, Review, RequiredReviewRating
 from mezzanine.blog.models import BlogPost
+from mezzanine.utils.views import paginate
 
 from django.contrib.contenttypes.models import ContentType
 from voting.models import Vote
@@ -77,6 +79,8 @@ def comments_for(context, obj, css_class=None):
         context["posted_comment_form"]
     except KeyError:
         context["posted_comment_form"] = form
+
+    context["reviewFilter"] = context['request'].GET.get('reviewFilter', '')
     context["unposted_comment_form"] = form
     context["comment_url"] = reverse("comment")
     context["object_for_comments"] = obj
@@ -167,8 +171,14 @@ def comment_thread_most_recent(context, parent):
     except KeyError:
         replied_to = 0
 
+    page = context['request'].GET.get("page", 1)
+    per_page = django_settings.REVIEWS_PER_PAGE
+    max_paging_links = django_settings.MAX_PAGING_LINKS
+
+    paginated = paginate(comments, page, per_page, max_paging_links)
+
     context.update({
-        "comments_for_thread": comments,
+        "comments_for_thread": paginated,
         "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
@@ -222,8 +232,14 @@ def comment_thread_most_liked(context, parent):
     except KeyError:
         replied_to = 0
 
+    page = context['request'].GET.get("page", 1)
+    per_page = django_settings.REVIEWS_PER_PAGE
+    max_paging_links = django_settings.MAX_PAGING_LINKS
+
+    paginated = paginate(comments, page, per_page, max_paging_links)
+
     context.update({
-        "comments_for_thread": comments,
+        "comments_for_thread": paginated,
         "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
@@ -284,8 +300,14 @@ def comment_thread_social(context, parent):
     except KeyError:
         replied_to = 0
 
+    page = context['request'].GET.get("page", 1)
+    per_page = django_settings.REVIEWS_PER_PAGE
+    max_paging_links = django_settings.MAX_PAGING_LINKS
+
+    paginated = paginate(comments, page, per_page, max_paging_links)
+
     context.update({
-        "comments_for_thread": comments,
+        "comments_for_thread": paginated,
         "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
@@ -358,8 +380,15 @@ def comment_thread_social_level2(context, parent):
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
         replied_to = 0
+
+    page = context['request'].GET.get("page", 1)
+    per_page = django_settings.REVIEWS_PER_PAGE
+    max_paging_links = django_settings.MAX_PAGING_LINKS
+
+    paginated = paginate(comments, page, per_page, max_paging_links)
+
     context.update({
-        "comments_for_thread": comments,
+        "comments_for_thread": paginated,
         "no_comments": parent_id is None and not comments,
         "replied_to": replied_to,
     })
