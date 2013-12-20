@@ -219,7 +219,7 @@ def comment_thread_most_liked(context, parent):
 
     commentsList = comments_queryset.extra(select={
         'score': 'SELECT COALESCE(SUM(vote),0) FROM %s WHERE content_type_id=%d AND object_id=%s.id' % (Vote._meta.db_table, int(model_type.id), table_name)
-    }).order_by('-score',)
+    }).order_by('-score', '-submit_date', )
 
     comments = commentsList.select_related("user")
 
