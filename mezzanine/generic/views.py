@@ -302,8 +302,6 @@ def fetch_comments_on_obj(request, content_type_id, object_id):
     else:
         comments_queryset = parent.comments.visible()
 
-    comments_queryset =  comments_queryset.select_related("user")
-
     return render_to_response('generic/includes/subcomment.html', {
        'comments_for_thread': comments_queryset, 
     }, context_instance=RequestContext(request))
@@ -320,7 +318,7 @@ def fetch_range_comments_on_obj(request, content_type_id, object_id, sIndex, lIn
     s = (int)(""+sIndex)
     l = (int)(""+lIndex)
     
-    comments_queryset =  comments_queryset.select_related("user").order_by('-submit_date')[s:l]
+    comments_queryset =  comments_queryset.order_by('-submit_date')[s:l]
 
     small = request.GET.get("small", None)
     if small:
