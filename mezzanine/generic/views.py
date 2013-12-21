@@ -152,9 +152,7 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 				action.send(obj, verb=settings.GOT_REVIEW_VERB, target=comment )
 
 			if request.is_ajax():
-				comments = [comment]
-
-				html = render_to_string('generic/includes/comment.html', { 'comments_for_thread': comments, 'request':request }) 
+				html = render_to_string('generic/includes/comment_ajax.html', { 'comment': comment, 'request':request }) 
 				res = {'html': html,
 					   'success':True}
 				response = HttpResponse( simplejson.dumps(res), 'application/json' )
@@ -411,9 +409,7 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 			review_obj.save()
 
 			if request.is_ajax():
-				comments = [review_obj]
-
-				html = render_to_string('generic/includes/comment.html', { 'comments_for_thread': comments, 'request':request }) 
+				html = render_to_string('generic/includes/comment_ajax.html', { 'comment': review_obj, 'request':request }) 
 				res = {'html': html,
 				   		'success':True}
 				response = HttpResponse( simplejson.dumps(res), 'application/json' )

@@ -126,8 +126,16 @@ def comment_thread(context, parent):
         replied_to = int(context["request"].POST["replied_to"])
     except KeyError:
         replied_to = 0
+
+    page = context['request'].GET.get("page", 1)
+    per_page = django_settings.REVIEWS_PER_PAGE
+    max_paging_links = django_settings.MAX_PAGING_LINKS
+
+    comments_queryset = context["all_comments"].get(parent_id, [])
+    paginated = paginate(comments_queryset, page, per_page, max_paging_links)
+
     context.update({
-        "comments_for_thread": context["all_comments"].get(parent_id, []),
+        "comments_for_thread": paginated,
         "no_comments": parent_id is None and not context["all_comments"],
         "replied_to": replied_to,
     })
