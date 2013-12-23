@@ -249,14 +249,24 @@ class SearchableManager(Manager):
         else:
             models = [self.model]
         all_results = []
+
+        totalQueryset = models[0].objects.none()
+
         user = kwargs.pop("for_user", None)
         for model in models:
             try:
                 queryset = model.objects.published(for_user=user)
             except AttributeError:
                 queryset = model.objects.get_query_set()
-            all_results.extend(queryset.search(*args, **kwargs))
-        return sorted(all_results, key=lambda r: r.result_count, reverse=True)
+            totalQueryset = totalQueryset | queryset.search(*args, **kwargs)
+        
+        return totalQueryset
+        """
+            Removed the return value as list and return queryset instead.
+            This is required to apply filters on the search results.
+        """
+            #all_results.extend(queryset.search(*args, **kwargs))
+        #return sorted(all_results, key=lambda r: r.result_count, reverse=True)
 
 
 class CurrentSiteManager(DjangoCSM):

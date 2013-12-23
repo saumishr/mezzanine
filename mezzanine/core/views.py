@@ -22,7 +22,8 @@ from mezzanine.core.models import Displayable, SitePermission
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.views import is_editable, paginate, render, set_cookie
 from mezzanine.utils.sites import has_site_permission
-
+from mezzanine.blog.views import is_valid_search_filter
+from mezzanine.blog.models import BlogPost
 
 def set_device(request, device=""):
     """
@@ -117,12 +118,39 @@ def search(request, template="search_results.html"):
         if not issubclass(search_model, Displayable):
             raise TypeError
     except TypeError:
-        search_model = Displayable
-        search_type = _("Everything")
+        search_model = BlogPost#Displayable
+        search_type =  _("blog.BlogPost")#_("Everything")
     else:
         search_type = search_model._meta.verbose_name_plural.capitalize()
     results = search_model.objects.search(query, for_user=request.user)
-    results.sort(searchComparator, reverse=True)
+
+    filters = request.GET.get("filter", '')
+    filter_arr = []
+    if filters != '':
+        filter_arr = filters.split('-')
+    field_sum = ''
+    if len(filter_arr) > 0:
+        for i in range(len(filter_arr)):
+            if is_valid_search_filter(filter_arr[i]):
+                if i == 0:
+                    field_sum += filter_arr[i].lower()+'_average'
+                else:
+                    field_sum += '+' + filter_arr[i].lower()+'_average'
+
+    if field_sum != '': 
+        '''
+        If filters are apllied, order vendors by sum of the filter parameter values.
+        In case filter values are equal, order them as per their overall average.
+        For now tie between equal overall_average is not broken. To break add more parameters ahead in order of priority.
+        '''
+        results = results.extra(select={'fieldsum': field_sum}, order_by=('-fieldsum', '-overall_average',))
+    else:
+        '''
+            In absence of any filters, order vendors by overall_average by default.
+        '''
+        results = results.order_by('-overall_average')
+
+    #results.sort(searchComparator, reverse=True)
     paginated = paginate(results, page, per_page, max_paging_links)
     context = {"query": query, "results": paginated,
                "search_type": search_type}

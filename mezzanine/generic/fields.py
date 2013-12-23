@@ -181,7 +181,7 @@ class KeywordsField(BaseGenericRelation):
 
     related_model = "generic.AssignedKeyword"
     fields = {"%s_string": CharField(editable=False, blank=True,
-                                     max_length=500)}
+                                     max_length=2500)}
 
     def __init__(self, *args, **kwargs):
         """
