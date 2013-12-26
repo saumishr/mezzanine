@@ -407,8 +407,14 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 			review_obj.save()
 
 			if request.is_ajax():
-				html = render_to_string('generic/includes/comment_ajax.html', { 'comment': review_obj, 'request':request }) 
-				res = {'html': html,
+				template = 'generic/includes/comment_ajax.html'
+				review_page = request.GET.get('reviewpage', '0')
+
+				if review_page == '1':
+					template = 'generic/includes/review_ajax.html'
+
+				html = render_to_string(template, { 'comment': review_obj, 'request':request }) 
+				res = { 'html': html,
 				   		'success':True}
 				response = HttpResponse( simplejson.dumps(res), 'application/json' )
 			else:
@@ -417,14 +423,14 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 			return response
 
 		elif form.errors:
-			return HttpResponse(dumps({"errors": form.errors}))
+			return HttpResponse(simplejson.dumps({"errors": form.errors}), 'application/json' )
 	else:        
 		data = {
 			"comment"           : review_obj.comment,
 			"title"             : review_obj.title,
 			"overall_value"     : review_obj.overall_value,
 			"price_value"       : review_obj.price_value,
-			"variety_value"     : review_obj.price_value,
+			"variety_value"     : review_obj.variety_value,
 			"quality_value"     : review_obj.quality_value,
 			"service_value"     : review_obj.service_value,
 			"exchange_value"    : review_obj.exchange_value,
@@ -440,7 +446,14 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 		form.fields['service_value'].widget 	= forms.HiddenInput()
 		form.fields['exchange_value'].widget 	= forms.HiddenInput()
 
+		"""
+			Review pages which list all the reviews require a template different than edit review template on store page.
+			For such a case reviewpage=1 query parameter should be present.
+		"""
+		review_page = request.GET.get('reviewpage', '0')
 		action_url = reverse("edit_review", kwargs={'review_id':review_id})
+		action_url = action_url + '?reviewpage='+review_page
+
 		context = {
 				"posted_comment_form": form,
 				"action_url":action_url,
