@@ -1,15 +1,44 @@
 {% extends "accounts/account_form.html" %}
 {% load i18n %}
+{% load future %}
 
 {% block main %}
 
 {% if request.user.is_authenticated %}
-    <p>{% trans "You're already logged in. If you'd like to create a new account, you'll need to log out first." %}</p>
+    <div class="row">
+		<div class="offset3 span4 fontTitillium1 fontSize15 radioColor">
+    		<p>{% trans "You're already logged in. If you'd like to create a new account, you'll need to log out first." %}</p>
+    	</div>
+    </div>
 {% else %}
+	<div class="row">
+		<div class="offset3 span4 fontTitillium1 fontSize15 radioColor">
+			<div class="socialLoginForm">
+				<a href="{% url "socialauth_begin" "facebook" %}" style="font-size:1px">
+	                <span class="socialLogin facebookLogin" style="margin-top:0;">
+	                </span>
+	            </a>
+	            <a href="{% url "socialauth_begin" "google-oauth2" %}" style="font-size:1px">
+	               <span class="socialLogin googleLogin" style="margin-top:0;">
+	               </span>
+	            </a>
+	            <a href="{% url "socialauth_begin" "twitter" %}" style="font-size:1px">
+	                <span class="socialLogin twitterLogin" style="margin-top:0;">
+	                </span>
+	            </a>
+	            <span class="fullGutter"> {% trans "or" %}</span>
+			</div>
+		</div>
+	</div>
     {{ block.super }}
-    {% if settings.ACCOUNTS_VERIFICATION_REQUIRED %}
-    <p>{% trans "After signing up, you'll receive an email with a link you need to click, in order to activate your account." %}</p>
-    {% endif %}
+
+    <div class="row">
+		<div class="offset3 span4 fontTitillium1 fontSize15 radioColor">
+    		{% if settings.ACCOUNTS_VERIFICATION_REQUIRED %}
+    			<p>{% trans "After signing up, you'll receive an email with a link you need to click, in order to activate your account." %}</p>
+    		{% endif %}
+    	</div>
+    </div>
 {% endif %}
 
 {% endblock %}

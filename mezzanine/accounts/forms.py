@@ -9,9 +9,9 @@ from mezzanine.conf import settings
 from mezzanine.core.forms import Html5Mixin
 from mezzanine.utils.models import get_user_model
 from mezzanine.utils.urls import slugify
+from mezzanine.forms.widgets import ClearableFileInputEx
 
 User = get_user_model()
-
 
 class LoginForm(Html5Mixin, forms.Form):
     """
@@ -101,8 +101,10 @@ class ProfileForm(Html5Mixin, forms.ModelForm):
                 for field in profile_fields:
                     value = getattr(self.instance.get_profile(), field)
                     self.initial[field] = value
+
         profile_photo_field = self.fields.pop("profile_photo")
         self.fields.insert(len(self.fields), "profile_photo", profile_photo_field)
+        self.fields["profile_photo"].widget = ClearableFileInputEx()
 
     def clean_username(self):
         """
