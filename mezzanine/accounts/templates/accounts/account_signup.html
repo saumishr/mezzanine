@@ -14,19 +14,20 @@
 	<div class="row">
 		<div class="offset3 span4 fontTitillium1 fontSize15 radioColor">
 			<div class="socialLoginForm">
-				<a href="{% url "socialauth_begin" "facebook" %}" style="font-size:1px">
-	                <span class="socialLogin facebookLogin" style="margin-top:0;">
-	                </span>
+				<a href="{% url "socialauth_begin" "facebook" %}" class="zocial facebook">
+				{% trans "Sign up with Facebook" %}
+<!-- 	                <span class="socialLogin facebookLogin" style="margin-top:0;">
+	                </span> -->
 	            </a>
-	            <a href="{% url "socialauth_begin" "google-oauth2" %}" style="font-size:1px">
-	               <span class="socialLogin googleLogin" style="margin-top:0;">
-	               </span>
+	            <a href="{% url "socialauth_begin" "google-oauth2" %}" class="zocial googleplus icon">
+<!-- 	               <span class="socialLogin googleLogin" style="margin-top:0;">
+	               </span> -->
 	            </a>
-	            <a href="{% url "socialauth_begin" "twitter" %}" style="font-size:1px">
-	                <span class="socialLogin twitterLogin" style="margin-top:0;">
-	                </span>
+	            <a href="{% url "socialauth_begin" "twitter" %}" class="zocial twitter icon">
+<!-- 	                <span class="socialLogin twitterLogin" style="margin-top:0;">
+	                </span> -->
 	            </a>
-	            <span class="fullGutter"> {% trans "or" %}</span>
+	            <span class="fullGutter fontSize20" style="clear:both;float:left;margin-top:10px;"> {% trans "or" %}</span>
 			</div>
 		</div>
 	</div>
