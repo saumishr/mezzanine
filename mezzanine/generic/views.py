@@ -268,7 +268,8 @@ def fetch_range_commenters_on_obj(request, content_type_id, object_id, sIndex=0,
         return render_to_response(template, {
             'commenters': sub_commenters,
             'is_incremental': False,
-            'data_href':data_href
+            'data_href':data_href,
+            'data_chunk':settings.MIN_COMMENTERS_CHUNK
         }, context_instance=RequestContext(request))
 
 
