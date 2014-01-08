@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required
 
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm, RatingForm, ReviewForm
-from mezzanine.generic.models import Keyword, Review
+from mezzanine.generic.models import Keyword, Review, RequiredReviewRating, OptionalReviewRating
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.views import render, set_cookie, is_spam
 from mezzanine.blog.models import BlogPost
@@ -405,6 +405,24 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 
 			review_obj.shop_again       = form.cleaned_data['shop_again']
 			review_obj.bought_category  = form.cleaned_data['category']
+
+			try:
+				reviewRatingObj                  = RequiredReviewRating.objects.get(commentid=review_obj.id)
+				reviewRatingObj.overall_value    = review_obj.overall_value
+				reviewRatingObj.price_value      = review_obj.price_value
+				reviewRatingObj.variety_value    = review_obj.variety_value
+				reviewRatingObj.quality_value    = review_obj.quality_value
+				reviewRatingObj.service_value    = review_obj.service_value
+				reviewRatingObj.shop_again       = review_obj.shop_again
+				reviewRatingObj.save()
+
+				optReviewRatingObj                  = OptionalReviewRating.objects.get(commentid=review_obj.id)
+				optReviewRatingObj.exchange_value   = review_obj.service_value
+				optReviewRatingObj.save()
+				
+			except:
+				pass
+
 			review_obj.save()
 
 			if request.is_ajax():
