@@ -31,7 +31,7 @@ class LoginForm(Html5Mixin, forms.Form):
         self._user = authenticate(username=username, password=password)
         if self._user is None:
             raise forms.ValidationError(
-                             _("Invalid username/email and password"))
+                             _("Uh-oh. We were unable to log you in. Do check your username and password and try again."))
         elif not self._user.is_active:
             raise forms.ValidationError(_("Your account is inactive"))
         return self.cleaned_data
