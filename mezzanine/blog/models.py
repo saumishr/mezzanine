@@ -98,7 +98,7 @@ class BlogCategory(Slugged):
     """
     A category for grouping blog posts into a series.
     """
-    parent_category = models.ForeignKey("BlogParentCategory", null=True,
+    parent_category = models.ManyToManyField("BlogParentCategory", null=True,
                                    related_name="blog_parent_category")
     class Meta:
         verbose_name = _("Blog Category")
@@ -108,7 +108,8 @@ class BlogCategory(Slugged):
     @models.permalink
     def get_absolute_url(self):
         url_name = "get_vendors"
-        kwargs = {"parent_category_slug": self.parent_category.slug, "sub_category_slug": self.slug}
+        parent_category_loc = self.parent_category.all()[0]
+        kwargs = {"parent_category_slug": parent_category_loc.slug, "sub_category_slug": self.slug}
         return (url_name, (), kwargs)
 
 

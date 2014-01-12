@@ -70,16 +70,16 @@ def get_login_redirect_url(request):
     - LOGIN_REDIRECT_URL setting
     - homepage
     """
-    ignorable_nexts = ("",)
+    ignorable_nexts = ("", "/")
     if "mezzanine.accounts" in settings.INSTALLED_APPS:
         from mezzanine.accounts import urls
         ignorable_nexts += (urls.SIGNUP_URL, urls.LOGIN_URL, urls.LOGOUT_URL)
     next = request.REQUEST.get("next", "")
     if next in ignorable_nexts:
-        try:
-            next = reverse(settings.LOGIN_REDIRECT_URL)
-        except NoReverseMatch:
-            next = "/"
+        # try:
+        #     next = reverse(settings.LOGIN_REDIRECT_URL)
+        # except NoReverseMatch:
+        next = settings.LOGIN_REDIRECT_URL
     return next
 
 def login_redirect(request):
