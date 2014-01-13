@@ -14,6 +14,7 @@ from mezzanine.utils.models import get_user_model_name
 from mezzanine.utils.sites import current_site_id
 from mezzanine.generic.fields import CommentsField
 from follow import utils
+from mezzanine.blog.models import BlogCategory
 
 REVIEW_TITLE_MAX_LENGTH = getattr(settings,'REVIEW_TITLE_MAX_LENGTH',250)
 
@@ -93,7 +94,8 @@ class Review(ThreadedComment):
     quality_value = models.IntegerField(_("Quality"))
     service_value = models.IntegerField(_("Customer Service"))
     exchange_value = models.IntegerField(_("Exchange Experience"), null = True)
-    bought_category = models.TextField(_("Bought"))
+    bought_category = models.ManyToManyField(BlogCategory,
+                                        verbose_name=_("Bought"), blank=True, related_name="review_bought_category", null=True)
     shop_again      = models.IntegerField(_("Will you shop again from this vendor?"))
     objects = CommentManager()
     

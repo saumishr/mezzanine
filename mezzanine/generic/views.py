@@ -14,13 +14,14 @@ from django.template.loader import render_to_string
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.template.defaultfilters import slugify
 
 from mezzanine.conf import settings
 from mezzanine.generic.forms import ThreadedCommentForm, RatingForm, ReviewForm
-from mezzanine.generic.models import Keyword, Review
+from mezzanine.generic.models import Keyword, Review, RequiredReviewRating, OptionalReviewRating
 from mezzanine.utils.cache import add_cache_bypass
 from mezzanine.utils.views import render, set_cookie, is_spam
-from mezzanine.blog.models import BlogPost
+from mezzanine.blog.models import BlogPost, BlogCategory
 
 from actstream import action
 import json
@@ -404,8 +405,35 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 				review_obj.exchange_value = exchange_value
 
 			review_obj.shop_again       = form.cleaned_data['shop_again']
-			review_obj.bought_category  = form.cleaned_data['category']
+			blog_category               = form.cleaned_data['category']
+			bought_category             = None
+			try:
+				bought_category         = BlogCategory.objects.get(slug=slugify(blog_category))
+			except:
+				pass
+
+			try:
+				reviewRatingObj                  = RequiredReviewRating.objects.get(commentid=review_obj.id)
+				reviewRatingObj.overall_value    = review_obj.overall_value
+				reviewRatingObj.price_value      = review_obj.price_value
+				reviewRatingObj.variety_value    = review_obj.variety_value
+				reviewRatingObj.quality_value    = review_obj.quality_value
+				reviewRatingObj.service_value    = review_obj.service_value
+				reviewRatingObj.shop_again       = review_obj.shop_again
+				reviewRatingObj.save()
+
+				optReviewRatingObj                  = OptionalReviewRating.objects.get(commentid=review_obj.id)
+				optReviewRatingObj.exchange_value   = review_obj.service_value
+				optReviewRatingObj.save()
+				
+			except:
+				pass
+
 			review_obj.save()
+			if bought_category:
+				for blog_category in review_obj.bought_category.all():
+					review_obj.bought_category.remove(blog_category)
+				review_obj.bought_category.add(bought_category)
 
 			if request.is_ajax():
 				template = 'generic/includes/comment_ajax.html'
@@ -436,7 +464,7 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 			"service_value"     : review_obj.service_value,
 			"exchange_value"    : review_obj.exchange_value,
 			"shop_again"        : review_obj.shop_again,
-			"category"          : review_obj.bought_category
+			"category"          : review_obj.bought_category.all()[0] #we support multiple bought categoires but there's no multiselect option in UI.
 		}
 
 		form = ReviewForm(request, parent_obj, initial=data)

@@ -147,8 +147,8 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
             results = BlogPost.objects.published().distinct()
         elif blog_parentcategory_slug.lower() != "all" and blog_subcategory_slug.lower() == "all":
             if blog_parentcategory:
-                blog_subcategories = list(BlogCategory.objects.all().filter(parent_category=blog_parentcategory))
-                results = BlogPost.objects.published().filter(categories__in=blog_subcategories).distinct()
+                blog_subcategories = BlogCategory.objects.all().filter(parent_category=blog_parentcategory).values_list('id', flat=True)
+                results = BlogPost.objects.published().filter(categories__id__in=blog_subcategories).distinct()
         else:
             if blog_subcategory and blog_parentcategory:
                 results = BlogPost.objects.published().filter(categories=blog_subcategory).distinct()

@@ -4,6 +4,7 @@ from django.contrib.comments.forms import CommentSecurityForm, CommentForm
 from django.contrib.comments.signals import comment_was_posted
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.template.defaultfilters import slugify
 
 from mezzanine.conf import settings
 from mezzanine.core.forms import Html5Mixin
@@ -15,6 +16,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 from django.utils import timezone
 from mezzanine.forms.widgets import TextareaEx
+from mezzanine.blog.models import BlogPost, BlogCategory
 
 COMMENT_MAX_LENGTH = getattr(settings,'COMMENT_MAX_LENGTH', 3000)
 REVIEW_TITLE_MAX_LENGTH = getattr(settings,'REVIEW_TITLE_MAX_LENGTH',250)
@@ -213,8 +215,6 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         review.by_author = request.user == getattr(obj, "user", None)
         review.ip_address = ip_for_request(request)
         review.replied_to_id = self.data.get("replied_to")
-        if obj.__class__.__name__ == "BlogPost":
-            review.bought_category = post_data.get("category")
 
         requiredreviewrating_name = obj.get_requiredreviewratingfield_name()
         requiredreviewrating_manager = getattr(obj, requiredreviewrating_name)
@@ -256,6 +256,12 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
             optionalreviewrating_instance.exchange_value = review.exchange_value
         review.save()
         
+        if isinstance(obj, BlogPost):
+            blog_category = post_data.get("category")
+            bought_category  = None
+            bought_category = BlogCategory.objects.get(slug=slugify(blog_category))
+            review.bought_category.add(bought_category)
+
         # the primary key for review will be generated when it is saved
         # and the reviewrating will need to store that primary key
         requiredreviewrating_instance.commentid = review.pk        
@@ -289,7 +295,7 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         
     def __init__(self, request, *args, **kwargs):
         super(ReviewForm, self).__init__(request, *args, **kwargs)
-        if args[0].__class__.__name__ == "BlogPost":
+        if isinstance(args[0], BlogPost):
             categories = args[0].categories.all() # get the list of categories from the post
             CHOICES = [('', _("-Select-"))]
             for category in categories:
