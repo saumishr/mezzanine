@@ -184,6 +184,9 @@
   .span4 {
     width: 370px;
   }
+  .span3_5 {
+    width: 305px;
+  }
   .span3 {
     width: 270px;
   }
@@ -497,6 +500,11 @@
   .uneditable-input.span4 {
     width: 356px;
   }
+  input.span3_5,
+  textarea.span3_5,
+  .uneditable-input.span3_5 {
+    width: 284px;
+  }
   input.span3,
   textarea.span3,
   .uneditable-input.span3 {
@@ -608,6 +616,9 @@
   }
   .span4 {
     width: 228px;
+  }
+  .span3_5{
+    width: 186px;
   }
   .span3 {
     width: 166px;
@@ -921,6 +932,11 @@
   textarea.span4,
   .uneditable-input.span4 {
     width: 214px;
+  }
+  input.span3_5,
+  textarea.span3_5,
+  .uneditable-input.span3_5 {
+    width: 196px;
   }
   input.span3,
   textarea.span3,
