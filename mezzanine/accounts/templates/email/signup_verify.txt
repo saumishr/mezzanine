@@ -1,6 +1,22 @@
 {% load i18n %}
 {% block main %}
-{% trans "Hey there, thanks for creating your account." %}
-{% trans "Please use the link below to activate it." %}
-http://{{ request.get_host }}{{ verify_url }}
+
+
+
+Hi {{user.first_name|title}}, 
+
+{% trans "Welcome to Wishradio and thank you so, so much for signing up. We've currently invited only a few of you to Wishradio to be one of our founding reviewers and tell us what you think of Wishradio. 
+
+Wishradio is the perfect platform to come to when you want to buy something online - be it a product or a service. We'll tell you which stores can help and how good they are (this part is where we need your help BIG time as the founding reviewers). Tell the Wishradio community what you're wishing for and we'll try and connect you with users / stores that can help your fulfill your wishes. (Like we said, for starters, its the wishes that money can buy.) 
+
+Even as we go about preparing for a more public launch in a few weeks' time, we need all the feedback that you can provide - what you think of the concept, how well does it work for you, what we can do to make your experience better." %}
+
+Click here to confirm and create your Wishradio account. http://{{ request.get_host }}{{ verify_url }}
+
+{% trans "We're delighted to have you on board and eagerly look forward to hearing from you. Drop us a mail on helpmewish@wishradio.in if you have any thoughts, ideas or questions. It would be an honour to connect with you. :)
+
+Look forward to hearing from you soon!"  %}
+
+{% trans "The Wishradio Team." %}
+
 {% endblock %}

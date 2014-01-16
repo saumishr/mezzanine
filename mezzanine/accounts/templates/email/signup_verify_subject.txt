@@ -1,2 +1,2 @@
 {% load i18n %}
-{% trans "Activate your account" %}
+{% trans "Beta Invite: For wishes that money can buy, head over to Wishradio.in!" %}

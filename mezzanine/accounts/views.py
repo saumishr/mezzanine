@@ -30,7 +30,7 @@ def login(request, template="accounts/account_login.html"):
     form = LoginForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         authenticated_user = form.save()
-        info(request, _("Successfully logged in"))
+        #info(request, _("Successfully logged in"))
         auth_login(request, authenticated_user)
         if request.is_ajax():
             if  request.user.is_authenticated():
@@ -56,7 +56,7 @@ def logout(request):
     Log the user out.
     """
     auth_logout(request)
-    info(request, _("Successfully logged out"))
+    #info(request, _("Successfully logged out"))
     return redirect(request.GET.get("next", "/"))
 
 
@@ -144,7 +144,7 @@ def profile_update(request, template="accounts/account_profile_update.html"):
                         instance=request.user)
     if request.method == "POST" and form.is_valid():
         user = form.save()
-        info(request, _("Profile updated"))
+        #info(request, _("Profile updated"))
         try:
             return redirect("profile", username=user.username)
         except NoReverseMatch:
