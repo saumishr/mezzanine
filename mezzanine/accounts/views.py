@@ -82,7 +82,7 @@ def signup(request, template="accounts/account_signup.html"):
             info(request, _("Successfully signed up"))
             auth_login(request, new_user)
             return login_redirect(request)
-    context = {"form": form, "title": _("Sign up")}
+    context = {"form": form, "title": _("Sign Up on Wish Radio - Make Wishes come true")}
     return render(request, template, context)
 
 
@@ -149,7 +149,7 @@ def profile_update(request, template="accounts/account_profile_update.html"):
             return redirect("profile", username=user.username)
         except NoReverseMatch:
             return redirect("profile_update")
-    context = {"form": form, "title": _("Update Profile")}
+    context = {"form": form, "title": _("Update your Profile")}
     return render(request, template, context)
 
 
