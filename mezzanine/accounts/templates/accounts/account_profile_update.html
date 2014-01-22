@@ -1,1 +1,12 @@
 {% extends "accounts/account_form.html" %}
+
+{% load i18n %}
+
+{% block main %}
+	<div class="row">
+		<div class="offset3 span4 radioColor fontSize20 pagination-centered">
+			{% trans "Update your Profile" %}
+		</div>
+	</div>
+{{block.super}}
+{% endblock %}
