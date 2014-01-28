@@ -204,6 +204,7 @@
   }
   .span0_5{
     width:45px;
+    padding-left: 1px;
   }
   .span0_25{
     width:32px;
@@ -637,6 +638,7 @@
   }
   .span0_5{
     width:32px;
+    padding-left: 1px;
   }
   .span0_25{
     width:25px;
