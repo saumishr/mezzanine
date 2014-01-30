@@ -14,7 +14,7 @@ from mezzanine.utils.models import get_user_model
 from mezzanine.accounts import get_profile_form
 from mezzanine.accounts.forms import LoginForm, PasswordResetForm
 from mezzanine.conf import settings
-from mezzanine.utils.email import send_verification_mail, send_approve_mail
+from mezzanine.utils.email import send_verification_mail, send_approve_mail, send_welcome_mail
 from mezzanine.utils.urls import login_redirect, get_login_redirect_url
 from mezzanine.utils.views import render
 
@@ -101,6 +101,7 @@ def signup_verify(request, uidb36=None, token=None):
         user.save()
         auth_login(request, user)
         info(request, _("Successfully signed up"))
+        send_welcome_mail(request, user, "signup_welcome")
         return login_redirect(request)
     else:
         error(request, _("The link you clicked is no longer valid."))

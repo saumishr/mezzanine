@@ -1,0 +1,31 @@
+{% load i18n %}
+{% block main %}
+
+
+
+Hi {{user.first_name|title}}, 
+
+{% trans "Thanks for confirming your email id. Just thought we'd help you get started on Wishradio. Here is a is-it-really-that-simple guide to using your Wishradio account to find the perfect stores for your wishes.  
+
+Search: Looking for something - a product or a service? Use the search bar to find online stores that offer it. 
+Read & Write Reviews: All the listed online stores come with user reviews and ratings given by helpful users like you. Read these to decide which store you want to check out or order from. Do write reviews about your experiences with online stores to complete the loop.  Tell us which stores won you over and which ones are best avoided.  
+Radio your Wishes: Tell your friends and followers what you wish for or just what's on your mind. You could use the Radio module to broadcast your wish, telling us which category it belongs to, and if you allow, we could have some of the finest online stores come back with the best offers on that wish.
+Follow: Follow other users or your favourite online stores to know the wishes they are posting or the latest deals they are offering. 
+
+Do write to us at helpmewish@wishradio.in with any thoughts, ideas or suggestions. We're waiting to hear from you." %}
+
+
+Happy Wishradioing!
+The Wishradio Team.
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+ 

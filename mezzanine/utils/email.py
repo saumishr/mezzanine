@@ -74,6 +74,24 @@ def send_verification_mail(request, user, verification_type):
                        settings.DEFAULT_FROM_EMAIL, user.email,
                        context=context, fail_silently=settings.DEBUG)
 
+def send_welcome_mail(request, user, verification_type):
+    """
+    Sends an email with a verification link to users when
+    ``ACCOUNTS_VERIFICATION_REQUIRED`` is ```True`` and they're signing
+    up, or when they reset a lost password.
+    The ``verification_type`` arg is both the name of the urlpattern for
+    the verification link, as well as the names of the email templates
+    to use.
+    """
+    context = {
+        "request": request,
+        "user": user
+    }
+    subject_template_name = "email/%s_subject.txt" % verification_type
+    subject = subject_template(subject_template_name, context)
+    send_mail_template(subject, "email/%s" % verification_type,
+                       settings.DEFAULT_FROM_EMAIL, user.email,
+                       context=context, fail_silently=settings.DEBUG)
 
 def send_approve_mail(request, user):
     """
