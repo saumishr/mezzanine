@@ -175,7 +175,7 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 		form = ReviewForm(request, parent)
 		form.fields['overall_value'].widget 	= forms.HiddenInput()
 		form.fields['price_value'].widget 		= forms.HiddenInput()
-		form.fields['variety_value'].widget 	= forms.HiddenInput()
+		form.fields['website_ex_value'].widget 	= forms.HiddenInput()
 		form.fields['quality_value'].widget 	= forms.HiddenInput()
 		form.fields['service_value'].widget 	= forms.HiddenInput()
 		form.fields['exchange_value'].widget 	= forms.HiddenInput()
@@ -388,14 +388,14 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 			if is_spam(request, form, url):
 				return redirect(url)
 
-			review_obj.comment          = form.cleaned_data['comment']
-			review_obj.title            = form.cleaned_data['title']
-			review_obj.overall_value    = form.cleaned_data['overall_value']
-			review_obj.price_value      = form.cleaned_data['price_value']
-			review_obj.variety_value    = form.cleaned_data['variety_value']
-			review_obj.quality_value    = form.cleaned_data['quality_value']
-			review_obj.service_value    = form.cleaned_data['service_value']
-			exchange_value   			= form.cleaned_data['exchange_value']
+			review_obj.comment             = form.cleaned_data['comment']
+			review_obj.title               = form.cleaned_data['title']
+			review_obj.overall_value       = form.cleaned_data['overall_value']
+			review_obj.price_value         = form.cleaned_data['price_value']
+			review_obj.website_ex_value    = form.cleaned_data['website_ex_value']
+			review_obj.quality_value       = form.cleaned_data['quality_value']
+			review_obj.service_value       = form.cleaned_data['service_value']
+			exchange_value   			   = form.cleaned_data['exchange_value']
 			"""
 			exchange_value is not a required field. Can contain null data as well. Therefore need to handle it seperately.
 			"""
@@ -413,13 +413,13 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 				pass
 
 			try:
-				reviewRatingObj                  = RequiredReviewRating.objects.get(commentid=review_obj.id)
-				reviewRatingObj.overall_value    = review_obj.overall_value
-				reviewRatingObj.price_value      = review_obj.price_value
-				reviewRatingObj.variety_value    = review_obj.variety_value
-				reviewRatingObj.quality_value    = review_obj.quality_value
-				reviewRatingObj.service_value    = review_obj.service_value
-				reviewRatingObj.shop_again       = review_obj.shop_again
+				reviewRatingObj                    = RequiredReviewRating.objects.get(commentid=review_obj.id)
+				reviewRatingObj.overall_value      = review_obj.overall_value
+				reviewRatingObj.price_value        = review_obj.price_value
+				reviewRatingObj.website_ex_value   = review_obj.website_ex_value
+				reviewRatingObj.quality_value      = review_obj.quality_value
+				reviewRatingObj.service_value      = review_obj.service_value
+				reviewRatingObj.shop_again         = review_obj.shop_again
 				reviewRatingObj.save()
 
 				optReviewRatingObj                  = OptionalReviewRating.objects.get(commentid=review_obj.id)
@@ -459,7 +459,7 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 			"title"             : review_obj.title,
 			"overall_value"     : review_obj.overall_value,
 			"price_value"       : review_obj.price_value,
-			"variety_value"     : review_obj.variety_value,
+			"website_ex_value"  : review_obj.website_ex_value,
 			"quality_value"     : review_obj.quality_value,
 			"service_value"     : review_obj.service_value,
 			"exchange_value"    : review_obj.exchange_value,
@@ -470,7 +470,7 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 		form = ReviewForm(request, parent_obj, initial=data)
 		form.fields['overall_value'].widget 	= forms.HiddenInput()
 		form.fields['price_value'].widget 		= forms.HiddenInput()
-		form.fields['variety_value'].widget 	= forms.HiddenInput()
+		form.fields['website_ex_value'].widget 	= forms.HiddenInput()
 		form.fields['quality_value'].widget 	= forms.HiddenInput()
 		form.fields['service_value'].widget 	= forms.HiddenInput()
 		form.fields['exchange_value'].widget 	= forms.HiddenInput()

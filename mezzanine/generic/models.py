@@ -89,10 +89,10 @@ class ThreadedComment(Comment):
 class Review(ThreadedComment):
     title = models.TextField(_('review_title'), max_length=REVIEW_TITLE_MAX_LENGTH)
     overall_value = models.IntegerField(_("Overall"))
-    price_value = models.IntegerField(_("Price"))
-    variety_value = models.IntegerField(_("Variety"))
-    quality_value = models.IntegerField(_("Quality"))
-    service_value = models.IntegerField(_("Customer Service"))
+    price_value = models.IntegerField(_("Pricing"))
+    website_ex_value = models.IntegerField(_("Website Experience"))
+    quality_value = models.IntegerField(_("Range & Quality"))
+    service_value = models.IntegerField(_("Timely Delivery"))
     exchange_value = models.IntegerField(_("Exchange Experience"), null = True)
     bought_category = models.ManyToManyField(BlogCategory,
                                         verbose_name=_("Bought"), blank=True, related_name="review_bought_category", null=True)
@@ -141,10 +141,10 @@ class RequiredReviewRating(models.Model):
     A rating that can be given to a piece of content.
     """
     overall_value = models.IntegerField(_("Overall Value"))
-    price_value = models.IntegerField(_("Price Value"))
-    variety_value = models.IntegerField(_("Variety Value"))
-    quality_value = models.IntegerField(_("Quality Value"))
-    service_value = models.IntegerField(_("Service Value"))
+    price_value = models.IntegerField(_("Pricing Value"))
+    website_ex_value = models.IntegerField(_("Website Experience Value"))
+    quality_value = models.IntegerField(_("Range & Quality Value"))
+    service_value = models.IntegerField(_("Time Delivery Value"))
     rating_date = models.DateTimeField(_("Required Review Rating date"),
         auto_now_add=True, null=True)
     shop_again      = models.IntegerField(_("Will you shop again from this vendor?"))
@@ -170,8 +170,8 @@ class RequiredReviewRating(models.Model):
         if str(self.price_value) not in valid:
             raise ValueError("Invalid Price rating. %s is not in %s" % (self.price_value,
                 ", ".join(valid)))
-        if str(self.variety_value) not in valid:
-            raise ValueError("Invalid Variety rating. %s is not in %s" % (self.variety_value,
+        if str(self.website_ex_value) not in valid:
+            raise ValueError("Invalid Website Experince rating. %s is not in %s" % (self.website_ex_value,
                 ", ".join(valid)))
         if str(self.quality_value) not in valid:
             raise ValueError("Invalid Quality rating. %s is not in %s" % (self.quality_value,

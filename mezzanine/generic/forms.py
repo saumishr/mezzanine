@@ -191,11 +191,11 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
     price_value   = forms.ChoiceField(label="Price", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
-    variety_value = forms.ChoiceField(label="Variety", widget=forms.RadioSelect,
+    website_ex_value = forms.ChoiceField(label="Website Experience", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
-    quality_value = forms.ChoiceField(label="Quality", widget=forms.RadioSelect,
+    quality_value = forms.ChoiceField(label="Range & Quality", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
-    service_value = forms.ChoiceField(label="Customer Service", widget=forms.RadioSelect,
+    service_value = forms.ChoiceField(label="Timely Delivery", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2))
     exchange_value = forms.ChoiceField(label="Exchange Experience", widget=forms.RadioSelect,
                               choices=zip(*(settings.RATINGS_RANGE,) * 2), required=False)
@@ -239,9 +239,9 @@ class ReviewForm(ThreadedCommentForm, Html5Mixin):
         if (post_data.get("price_value")):
             review.price_value = post_data.get("price_value")
             requiredreviewrating_instance.price_value = review.price_value
-        if (post_data.get("variety_value")):
-            review.variety_value = post_data.get("variety_value")
-            requiredreviewrating_instance.variety_value = review.variety_value
+        if (post_data.get("website_ex_value")):
+            review.website_ex_value = post_data.get("website_ex_value")
+            requiredreviewrating_instance.website_ex_value = review.website_ex_value
         if (post_data.get("quality_value")):
             review.quality_value = post_data.get("quality_value")
             requiredreviewrating_instance.quality_value = review.quality_value

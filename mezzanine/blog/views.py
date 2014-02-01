@@ -104,7 +104,7 @@ def get_vendors_all(request):
     return HttpResponseRedirect(url)
 
 def is_valid_search_filter(filterstr):
-    valid_filters = ['price', 'variety', 'quality', 'service', 'exchange', 'overall']
+    valid_filters = ['price', 'website_ex', 'quality', 'service', 'exchange', 'overall']
     if filterstr.lower() in valid_filters:
         return True
     return False
