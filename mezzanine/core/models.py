@@ -326,7 +326,7 @@ class RichText(models.Model):
 
     content = RichTextField(_("Content"))
 
-    search_fields = ("content",)
+    #search_fields = ("content",)
 
     class Meta:
         abstract = True
