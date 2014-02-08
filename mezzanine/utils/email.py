@@ -70,9 +70,10 @@ def send_verification_mail(request, user, verification_type):
     }
     subject_template_name = "email/%s_subject.txt" % verification_type
     subject = subject_template(subject_template_name, context)
-    send_mail_template(subject, "email/%s" % verification_type,
-                       settings.DEFAULT_FROM_EMAIL, user.email,
-                       context=context, fail_silently=settings.DEBUG)
+    if user.email:
+        send_mail_template(subject, "email/%s" % verification_type,
+                           settings.DEFAULT_FROM_EMAIL, user.email,
+                           context=context, fail_silently=settings.DEBUG)
 
 def send_welcome_mail(request, user, verification_type):
     """
@@ -89,9 +90,10 @@ def send_welcome_mail(request, user, verification_type):
     }
     subject_template_name = "email/%s_subject.txt" % verification_type
     subject = subject_template(subject_template_name, context)
-    send_mail_template(subject, "email/%s" % verification_type,
-                       settings.DEFAULT_FROM_EMAIL, user.email,
-                       context=context, fail_silently=settings.DEBUG)
+    if user.email:
+        send_mail_template(subject, "email/%s" % verification_type,
+                           settings.DEFAULT_FROM_EMAIL, user.email,
+                           context=context, fail_silently=settings.DEBUG)
 
 def send_approve_mail(request, user):
     """
