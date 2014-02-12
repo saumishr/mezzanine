@@ -25,6 +25,8 @@ from mezzanine.utils.sites import has_site_permission
 from mezzanine.blog.views import is_valid_search_filter
 from mezzanine.blog.models import BlogPost
 
+from follow.models import Follow
+
 def set_device(request, device=""):
     """
     Sets a device name in a cookie when a user explicitly wants to go
@@ -113,6 +115,7 @@ def search(request, template="search_results.html"):
     page = request.GET.get("page", 1)
     per_page = settings.SEARCH_PER_PAGE
     max_paging_links = settings.MAX_PAGING_LINKS
+    table_name = BlogPost._meta.db_table
     try:
         search_model = get_model(*request.GET.get("type", "").split(".", 1))
         if not issubclass(search_model, Displayable):
@@ -128,27 +131,32 @@ def search(request, template="search_results.html"):
     filter_arr = []
     if filters != '':
         filter_arr = filters.split('-')
-    field_sum = ''
+    filter_sum = ''
     if len(filter_arr) > 0:
         for i in range(len(filter_arr)):
             if is_valid_search_filter(filter_arr[i]):
                 if i == 0:
-                    field_sum += filter_arr[i].lower()+'_average'
+                    filter_sum += filter_arr[i].lower()+'_average'
                 else:
-                    field_sum += '+' + filter_arr[i].lower()+'_average'
+                    filter_sum += '+' + filter_arr[i].lower()+'_average'
 
-    if field_sum != '': 
+    if filter_sum != '': 
         '''
         If filters are apllied, order vendors by sum of the filter parameter values.
         In case filter values are equal, order them as per their overall average.
         For now tie between equal overall_average is not broken. To break add more parameters ahead in order of priority.
         '''
-        results = results.extra(select={'fieldsum': field_sum}, order_by=('-fieldsum', '-overall_average',))
+        results = results.extra(select={'filtersum': filter_sum,
+                                                     'fieldsum':'price_average + website_ex_average + quality_average + service_average',
+                                                     'followers': 'SELECT COUNT(*) FROM %s WHERE target_blogpost_id=%s.id' % (Follow._meta.db_table, table_name)},
+                                                     order_by=('-filtersum', '-overall_average', '-fieldsum', '-comments_count', '-followers',)).distinct()
     else:
         '''
             In absence of any filters, order vendors by overall_average by default.
         '''
-        results = results.order_by('-overall_average')
+        results = results.extra(select={'fieldsum':'price_average + website_ex_average + quality_average + service_average',
+                                        'followers': 'SELECT COUNT(*) FROM %s WHERE target_blogpost_id=%s.id' % (Follow._meta.db_table, table_name)},
+                                        order_by=('-overall_average', '-fieldsum', '-comments_count', '-followers',)).distinct()
 
     #results.sort(searchComparator, reverse=True)
     paginated = paginate(results, page, per_page, max_paging_links)

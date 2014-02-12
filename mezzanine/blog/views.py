@@ -12,6 +12,8 @@ from mezzanine.conf import settings
 from mezzanine.generic.models import Keyword
 from mezzanine.utils.views import render, paginate
 from mezzanine.utils.models import get_user_model
+from follow.models import Follow
+
 import urlparse
 
 User = get_user_model()
@@ -133,6 +135,7 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
             except BlogParentCategory.DoesNotExist:
                 raise Http404()
 
+        table_name = BlogPost._meta.db_table
         blog_subcategory = None
         blog_subcategory_slug = sub_category_slug#pathlist[-2]
         blog_subcategory_title = _("All")
@@ -158,27 +161,32 @@ def get_vendors(request, parent_category_slug, sub_category_slug, template="blog
                 """
                 raise Http404()
 
-        field_sum = ''
+        filter_sum = ''
         if len(filter_arr) > 0:
             for i in range(len(filter_arr)):
                 if is_valid_search_filter(filter_arr[i]):
                     if i == 0:
-                        field_sum += filter_arr[i].lower()+'_average'
+                        filter_sum += filter_arr[i].lower()+'_average'
                     else:
-                        field_sum += '+' + filter_arr[i].lower()+'_average'
+                        filter_sum += '+' + filter_arr[i].lower()+'_average'
 
-        if field_sum != '': 
+        if filter_sum != '': 
         	'''
         	If filters are apllied, order vendors by sum of the filter parameter values.
         	In case filter values are equal, order them as per their overall average.
         	For now tie between equal overall_average is not broken. To break add more parameters ahead in order of priority.
         	'''
-        	filtered_results = results.extra(select={'fieldsum': field_sum}, order_by=('-fieldsum', '-overall_average',))
+        	filtered_results = results.extra(select={'filtersum': filter_sum,
+                                                     'fieldsum':'price_average + website_ex_average + quality_average + service_average',
+                                                     'followers': 'SELECT COUNT(*) FROM %s WHERE target_blogpost_id=%s.id' % (Follow._meta.db_table, table_name)},
+                                                     order_by=('-filtersum', '-overall_average', '-fieldsum', '-comments_count', '-followers',)).distinct()
         else:
         	'''
         		In absence of any filters, order vendors by overall_average by default.
         	'''
-        	filtered_results = results.order_by('-overall_average')
+        	filtered_results = results.extra(select={'fieldsum':'price_average + website_ex_average + quality_average + service_average',
+                                                     'followers': 'SELECT COUNT(*) FROM %s WHERE target_blogpost_id=%s.id' % (Follow._meta.db_table, table_name)},
+                                                     order_by=('-overall_average', '-fieldsum', '-comments_count', '-followers',)).distinct()
 
         settings.use_editable()
         page = request.GET.get("page", 1)
