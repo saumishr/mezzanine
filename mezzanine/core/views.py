@@ -125,6 +125,7 @@ def search(request, template="search_results.html"):
         search_type =  _("blog.BlogPost")#_("Everything")
     else:
         search_type = search_model._meta.verbose_name_plural.capitalize()
+    query = '"%s"' % query
     results = search_model.objects.search(query, for_user=request.user)
 
     filters = request.GET.get("filter", '')
