@@ -493,7 +493,7 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 
 	return response
 
-def comment_thread_most_liked_view(request, obj, sIndex=0, lIndex=0, template="generic/includes/comments_most_liked.html"):
+def comment_thread_most_liked_view(request, obj, template="generic/includes/comments_most_liked.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
@@ -510,11 +510,9 @@ def comment_thread_most_liked_view(request, obj, sIndex=0, lIndex=0, template="g
     context["unposted_comment_form"] = form
     context["comment_url"] = reverse("comment")
     context["object_for_comments"] = parent
-    context["sIndex"] = sIndex
-    context["lIndex"] = lIndex
     return render(request, template, context)
  
-def comment_thread_most_recent_view(request, obj, sIndex=0, lIndex=0, template="generic/includes/comments_most_recent.html"):
+def comment_thread_most_recent_view(request, obj, template="generic/includes/comments_most_recent.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
@@ -531,8 +529,6 @@ def comment_thread_most_recent_view(request, obj, sIndex=0, lIndex=0, template="
     context["unposted_comment_form"] = form
     context["comment_url"] = reverse("comment")
     context["object_for_comments"] = parent
-    context["sIndex"] = sIndex
-    context["lIndex"] = lIndex
     return render(request, template, context)
 
  
@@ -556,7 +552,7 @@ def comment_thread_default_view(request, obj, template="generic/includes/comment
     return render(request, template, context)
 
 @login_required
-def comment_thread_social_view(request, obj, sIndex=0, lIndex=0, template="generic/includes/comments_social.html"):
+def comment_thread_social_view(request, obj, template="generic/includes/comments_social.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
@@ -573,12 +569,10 @@ def comment_thread_social_view(request, obj, sIndex=0, lIndex=0, template="gener
     context["unposted_comment_form"] = form
     context["comment_url"] = reverse("comment")
     context["object_for_comments"] = parent
-    context["sIndex"] = sIndex
-    context["lIndex"] = lIndex
     return render(request, template, context)
 
 @login_required
-def comment_thread_social_view_level2(request, obj, sIndex=0, lIndex=0, template="generic/includes/comments_social_level2.html"):
+def comment_thread_social_view_level2(request, obj, template="generic/includes/comments_social_level2.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
@@ -596,8 +590,6 @@ def comment_thread_social_view_level2(request, obj, sIndex=0, lIndex=0, template
     context["unposted_comment_form"] = form
     context["comment_url"] = reverse("comment")
     context["object_for_comments"] = parent
-    context["sIndex"] = sIndex
-    context["lIndex"] = lIndex
     return render(request, template, context)
 
 def render_review(request, blog_slug, review_id, template="generic/includes/review_page.html"):

@@ -20,6 +20,10 @@ from django.contrib.comments.models import Comment
 from django.template import TemplateSyntaxError, Node, Variable
 from django.contrib.contenttypes.models import ContentType
 
+from social_auth.models import UserSocialAuth
+from social_friends_finder.models import SocialFriendList
+from django.http import HttpResponse
+
 register = template.Library()
 
 
@@ -149,16 +153,6 @@ def comment_thread_most_recent(context, parent):
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    incremental_fetch = False
-    if 'sIndex' in context and 'lIndex' in context:
-        incremental_fetch = True
-
-    if incremental_fetch:
-        sIndex = context["sIndex"]
-        lIndex = context["lIndex"]
-
-        s = (int)(""+sIndex)
-        l = (int)(""+lIndex)
 
     comments = None
     if "request" in context and context["request"].user.is_staff:
@@ -168,9 +162,6 @@ def comment_thread_most_recent(context, parent):
 
 
     comments = comments_queryset.select_related("user").order_by('-submit_date')
-
-    if incremental_fetch:  
-        comments = comments[s:l]
 
     parent_id = parent.id if isinstance(parent, Review) else None
     
@@ -201,21 +192,6 @@ def comment_thread_most_liked(context, parent):
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-
-    from django.db.models import Count, Min
-
-    incremental_fetch = False
-    if 'sIndex' in context and 'lIndex' in context:
-        incremental_fetch = True
-
-    if incremental_fetch:
-        sIndex = context["sIndex"]
-        lIndex = context["lIndex"]
-
-        s = (int)(""+sIndex)
-        l = (int)(""+lIndex)
-
-
     comments = None
     if "request" in context and context["request"].user.is_staff:
         comments_queryset = parent.comments.all()
@@ -230,9 +206,6 @@ def comment_thread_most_liked(context, parent):
     }).order_by('-score', '-submit_date', )
 
     comments = commentsList.select_related("user")
-
-    if incremental_fetch:  
-        comments = comments[s:l]
  
     parent_id = parent.id if isinstance(parent, Review) else None
     try:
@@ -261,22 +234,6 @@ def comment_thread_social(context, parent):
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from social_auth.models import UserSocialAuth
-    from social_friends_finder.models import SocialFriendList
-    from django.http import HttpResponse
-
-    incremental_fetch = False
-    if 'sIndex' in context and 'lIndex' in context:
-        incremental_fetch = True
-
-    if incremental_fetch:
-        sIndex = context["sIndex"]
-        lIndex = context["lIndex"]
-
-        s = (int)(""+sIndex)
-        l = (int)(""+lIndex)
-
-
     comments = None
 
     if "request" in context and context["request"].user.is_staff:
@@ -298,9 +255,6 @@ def comment_thread_social(context, parent):
     
     friends = context["request"].user.relationships.following()
     comments = comments_queryset.select_related("user").filter(user__in=friends)
-
-    if incremental_fetch:  
-        comments = comments[s:l]
 
     parent_id = parent.id if isinstance(parent, Review) else None
     try:
@@ -329,23 +283,6 @@ def comment_thread_social_level2(context, parent):
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    from social_auth.models import UserSocialAuth
-    from social_friends_finder.models import SocialFriendList
-    from django.http import HttpResponse
-    from itertools import chain
-    from operator import attrgetter
-    from django.core.cache import cache
-
-    incremental_fetch = False
-    if 'sIndex' in context and 'lIndex' in context:
-        incremental_fetch = True
-
-    if incremental_fetch:
-        sIndex = context["sIndex"]
-        lIndex = context["lIndex"]
-
-        s = (int)(""+sIndex)
-        l = (int)(""+lIndex)
 
     comments = None
     if "request" in context and context["request"].user.is_staff:
@@ -379,9 +316,6 @@ def comment_thread_social_level2(context, parent):
     comments_queryset = comments_queryset.order_by('-submit_date')
 
     comments = comments_queryset.select_related("user").filter(user__in=friends_of_friends)
-
-    if incremental_fetch:
-        comments = comments[s:l]
 
     parent_id = parent.id if isinstance(parent, Review) else None
     try:
