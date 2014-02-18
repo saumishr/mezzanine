@@ -493,14 +493,14 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 
 	return response
 
-def comment_thread_most_liked_view(request, obj, template="generic/includes/comments_most_liked.html"):
+def comment_thread_most_liked_view(request, object_id, template="generic/includes/comments_most_liked.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    parent = BlogPost.objects.get(id=obj)
+    parent = BlogPost.objects.get(id=object_id)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
     try:
@@ -512,14 +512,14 @@ def comment_thread_most_liked_view(request, obj, template="generic/includes/comm
     context["object_for_comments"] = parent
     return render(request, template, context)
  
-def comment_thread_most_recent_view(request, obj, template="generic/includes/comments_most_recent.html"):
+def comment_thread_most_recent_view(request, object_id, template="generic/includes/comments_most_recent.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    parent = BlogPost.objects.get(id=obj)
+    parent = BlogPost.objects.get(id=object_id)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
     try:
@@ -532,14 +532,14 @@ def comment_thread_most_recent_view(request, obj, template="generic/includes/com
     return render(request, template, context)
 
  
-def comment_thread_default_view(request, obj, template="generic/includes/comments.html"):
+def comment_thread_default_view(request, object_id, template="generic/includes/comments.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    parent = BlogPost.objects.get(id=obj)
+    parent = BlogPost.objects.get(id=object_id)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
     try:
@@ -552,14 +552,14 @@ def comment_thread_default_view(request, obj, template="generic/includes/comment
     return render(request, template, context)
 
 @login_required
-def comment_thread_social_view(request, obj, template="generic/includes/comments_social.html"):
+def comment_thread_social_view(request, object_id, template="generic/includes/comments_social.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
     as keys for retrieval on subsequent recursive calls from the
     comments template.
     """
-    parent = BlogPost.objects.get(id=obj)
+    parent = BlogPost.objects.get(id=object_id)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
     try:
@@ -572,7 +572,7 @@ def comment_thread_social_view(request, obj, template="generic/includes/comments
     return render(request, template, context)
 
 @login_required
-def comment_thread_social_view_level2(request, obj, template="generic/includes/comments_social_level2.html"):
+def comment_thread_social_view_level2(request, object_id, template="generic/includes/comments_social_level2.html"):
     """
     Return a list of child comments for the given parent, storing all
     comments in a dict in the context when first called, using parents
@@ -580,7 +580,7 @@ def comment_thread_social_view_level2(request, obj, template="generic/includes/c
     comments template.
     """
 
-    parent = BlogPost.objects.get(id=obj)
+    parent = BlogPost.objects.get(id=object_id)
     context = RequestContext(request)
     form = ReviewForm(request, parent)
     try:
