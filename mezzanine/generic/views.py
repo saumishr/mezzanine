@@ -128,19 +128,69 @@ def comment(request, template="generic/comments.html"):
     response = render(request, template, context)
     return response
 
-@login_required
+def initial_validation_review(request, prefix, content_type_id, object_id):
+    """
+    Returns the related model instance and post data to use in the
+    comment/rating views below.
+
+    Both comments and ratings have a ``prefix_ACCOUNT_REQUIRED``
+    setting. If this is ``True`` and the user is unauthenticated, we
+    store their post data in their session, and redirect to login with
+    the view's url (also defined by the prefix arg) as the ``next``
+    param. We can then check the session data once they log in,
+    and complete the action authenticated.
+
+    On successful post, we pass the related object and post data back,
+    which may have come from the session, for each of the comments and
+    ratings view functions to deal with as needed.
+    """
+    post_data = request.POST
+    settings.use_editable()
+    login_required_setting_name = prefix.upper() + "S_ACCOUNT_REQUIRED"
+    posted_session_key = "unauthenticated_" + prefix
+    redirect_url = ""
+
+    if getattr(settings, login_required_setting_name, False):
+        if not request.user.is_authenticated():
+            request.session[posted_session_key] = request.POST
+            if request.is_ajax():
+                return HttpResponse(simplejson.dumps(dict(success=False,
+                                                          error_code=settings.LOGIN_REQUIRED)), 'application/json')
+            else:
+               error(request, _("You must logged in. Please log in or "
+                             "sign up to complete this action."))
+               redirect_url = "%s?next=%s" % (settings.LOGIN_URL, reverse(prefix, kwargs={
+                                                                                    'content_type_id': content_type_id,
+                                                                                    'object_id':object_id
+                                                                                  }))
+    if not redirect_url:
+        try:
+            model = get_model(*post_data.get("content_type", "").split(".", 1))
+            if model:
+                obj = model.objects.get(id=post_data.get("object_pk", None))
+        except (TypeError, ObjectDoesNotExist):
+            pass
+
+    if redirect_url:
+        if request.is_ajax():
+            return HttpResponse(dumps({"location": redirect_url}))
+        else:
+            return redirect(redirect_url)
+    return obj, post_data
+
 def write_review(request, content_type_id, object_id, template="generic/includes/write_review.html"):
 	ctype = get_object_or_404(ContentType, pk=content_type_id)
 	parent = get_object_or_404(ctype.model_class(), pk=object_id)
-	
+	prefix = "write_review"
+
 	if request.method == 'POST':
-		response = initial_validation(request, "write_review")
+		response = initial_validation_review(request, prefix, content_type_id, object_id)
 		if isinstance(response, HttpResponse):
 		    return response
 		obj, post_data = response
 
 		form = ReviewForm(request, obj, request.POST)
-		if form.is_valid():
+		if form.is_valid() and request.user.is_authenticated():
 			url = obj.get_absolute_url()
 			if is_spam(request, form, url):
 				return redirect(url)  
@@ -172,7 +222,15 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 			return HttpResponse( simplejson.dumps({"errors": form.errors,
 										"success":False}), 'application/json')		
 	else:
-		form = ReviewForm(request, parent)
+		post_data = None
+		posted_session_key = "unauthenticated_" + prefix
+
+		if posted_session_key in request.session:
+			post_data = request.session.pop(posted_session_key)
+			form = ReviewForm(request, parent, post_data)
+		else:
+			form = ReviewForm(request, parent)
+
 		form.fields['overall_value'].widget 	= forms.HiddenInput()
 		form.fields['price_value'].widget 		= forms.HiddenInput()
 		form.fields['website_ex_value'].widget 	= forms.HiddenInput()

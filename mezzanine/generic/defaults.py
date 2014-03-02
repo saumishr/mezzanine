@@ -33,7 +33,13 @@ if generic_comments:
         editable=True,
         default=True,
     )
-
+    register_setting(
+        name="WRITE_REVIEWS_ACCOUNT_REQUIRED",
+        label=_("Accounts required for writing a review"),
+        description=_("If ``True``, users must log in to review."),
+        editable=True,
+        default=True,
+    )
     register_setting(
         name="COMMENTS_DISQUS_SHORTNAME",
         label=_("Disqus shortname"),

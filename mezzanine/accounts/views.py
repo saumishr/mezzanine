@@ -28,13 +28,13 @@ def login(request, template="accounts/account_login.html"):
     """
     isAjax = False
     form = LoginForm(request.POST or None)
+    next = get_login_redirect_url(request)
     if request.method == "POST" and form.is_valid():
         authenticated_user = form.save()
         #info(request, _("Successfully logged in"))
         auth_login(request, authenticated_user)
         if request.is_ajax():
             if  request.user.is_authenticated():
-                next = get_login_redirect_url(request)
                 return HttpResponse(simplejson.dumps(dict(url=next,
                                                           success=True)))
             else:
@@ -47,7 +47,7 @@ def login(request, template="accounts/account_login.html"):
     if request.is_ajax():
         template = "accounts/ajax_account_login.html"
 
-    context = {"form": form, "title": _("Log in")}
+    context = {"form": form, "title": _("Log in"), "next":next}
     return render(request, template, context)
 
 
