@@ -19,5 +19,6 @@ urlpatterns = patterns("mezzanine.generic.views",
     url(r'^review/(?P<review_id>\d+)/edit/$', 'edit_review', name='edit_review'),
     url(r'^review/(?P<blog_slug>\w+)/(?P<review_id>\d+)/$', 'render_review', name='render_review'),
     url(r'^review/new/(?P<content_type_id>\d+)/(?P<object_id>\d+)/$', "write_review", name="write_review"),
+    url(r'^review/new/$', "shopped_recently", name="shopped_recently"),
     url(r'^comments/object/(?P<content_type_id>\d+)/(?P<object_id>\d+)/range/(?P<sIndex>\d+)/(?P<lIndex>\d+)/$','fetch_range_comments_on_obj', name='fetch_range_comments_on_obj'),
 )

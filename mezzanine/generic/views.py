@@ -128,7 +128,7 @@ def comment(request, template="generic/comments.html"):
     response = render(request, template, context)
     return response
 
-def initial_validation_review(request, prefix, content_type_id, object_id):
+def initial_validation_review(request, prefix, content_type_id, object_id, store):
     """
     Returns the related model instance and post data to use in the
     comment/rating views below.
@@ -148,11 +148,17 @@ def initial_validation_review(request, prefix, content_type_id, object_id):
     settings.use_editable()
     login_required_setting_name = prefix.upper() + "S_ACCOUNT_REQUIRED"
     posted_session_key = "unauthenticated_" + prefix
+    post_session_generic_review_store_key = "unauthenticated_store_" + prefix
+
     redirect_url = ""
 
     if getattr(settings, login_required_setting_name, False):
         if not request.user.is_authenticated():
             request.session[posted_session_key] = request.POST
+
+            if store != 'None':
+                request.session[post_session_generic_review_store_key] = store
+
             if request.is_ajax():
                 return HttpResponse(simplejson.dumps(dict(success=False,
                                                           error_code=settings.LOGIN_REQUIRED)), 'application/json')
@@ -178,13 +184,31 @@ def initial_validation_review(request, prefix, content_type_id, object_id):
             return redirect(redirect_url)
     return obj, post_data
 
+def shopped_recently(request, template="generic/includes/shopped_recently.html"):
+    response = render(request, template)
+    return response
+
 def write_review(request, content_type_id, object_id, template="generic/includes/write_review.html"):
-	ctype = get_object_or_404(ContentType, pk=content_type_id)
-	parent = get_object_or_404(ctype.model_class(), pk=object_id)
+	store = request.GET.get('store', 'None')
+	parent = None
+	if store != 'None':
+		store = store.lower()
+		try:
+			parent = BlogPost.objects.get(title__iexact=store)
+			content_type_id = ContentType.objects.get_for_model(parent).pk
+			object_id = parent.pk
+		except:
+			pass
+
+	if not parent:
+		ctype = get_object_or_404(ContentType, pk=content_type_id)
+		parent = get_object_or_404(ctype.model_class(), pk=object_id)
+
 	prefix = "write_review"
 
 	if request.method == 'POST':
-		response = initial_validation_review(request, prefix, content_type_id, object_id)
+		response = initial_validation_review(request, prefix, content_type_id, object_id, store)
+
 		if isinstance(response, HttpResponse):
 		    return response
 		obj, post_data = response
@@ -205,6 +229,7 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 			if request.is_ajax():
 				html = render_to_string('generic/includes/comment_ajax.html', { 'comment': comment, 'request':request }) 
 				res = {'html': html,
+					   'store': obj.title,
 					   'success':True}
 				response = HttpResponse( simplejson.dumps(res), 'application/json' )
 				# Store commenter's details in a cookie for 90 days.
@@ -224,10 +249,13 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 	else:
 		post_data = None
 		posted_session_key = "unauthenticated_" + prefix
+		post_session_generic_review_store_key = "unauthenticated_store_" + prefix
 
 		if posted_session_key in request.session:
 			post_data = request.session.pop(posted_session_key)
 			form = ReviewForm(request, parent, post_data)
+			if post_session_generic_review_store_key in request.session:
+				request.session.pop(post_session_generic_review_store_key)
 		else:
 			form = ReviewForm(request, parent)
 
@@ -238,10 +266,14 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 		form.fields['service_value'].widget 	= forms.HiddenInput()
 		form.fields['exchange_value'].widget 	= forms.HiddenInput()
 
-		context = {"new_review":True,  "obj": parent, "posted_comment_form": form, "action_url": reverse("write_review", kwargs={
-																												'content_type_id':content_type_id,
-																												'object_id':object_id
-																											})}
+		action_url = reverse("write_review", kwargs={
+														'content_type_id':content_type_id,
+														'object_id':object_id
+													})
+		if store != 'None':
+			action_url += '?store=' + store
+
+		context = {"new_review":True,  "obj": parent, "posted_comment_form": form, "action_url": action_url }
 		response = render(request, template, context)
 		return response
 
@@ -502,6 +534,7 @@ def edit_review(request, review_id, template="generic/includes/write_review.html
 
 				html = render_to_string(template, { 'comment': review_obj, 'request':request }) 
 				res = { 'html': html,
+						'store' : review_obj.content_object.title,
 				   		'success':True}
 				response = HttpResponse( simplejson.dumps(res), 'application/json' )
 			else:
