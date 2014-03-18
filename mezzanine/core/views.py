@@ -24,6 +24,7 @@ from mezzanine.utils.views import is_editable, paginate, render, set_cookie
 from mezzanine.utils.sites import has_site_permission
 from mezzanine.blog.views import is_valid_search_filter
 from mezzanine.blog.models import BlogPost
+from mezzanine.core.models import CONTENT_STATUS_PUBLISHED
 
 from follow.models import Follow
 
@@ -160,6 +161,7 @@ def search(request, template="search_results.html"):
                                         order_by=('-overall_average', '-fieldsum', '-comments_count', '-followers',)).distinct()
 
     #results.sort(searchComparator, reverse=True)
+    results = results.filter(status=CONTENT_STATUS_PUBLISHED)
     paginated = paginate(results, page, per_page, max_paging_links)
     context = {"query": query, "results": paginated,
                "search_type": search_type}
