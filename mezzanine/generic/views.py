@@ -169,6 +169,14 @@ def initial_validation_review(request, prefix, content_type_id, object_id, store
                                                                                     'content_type_id': content_type_id,
                                                                                     'object_id':object_id
                                                                                   }))
+        elif posted_session_key in request.session:
+            post_data = request.session.pop(posted_session_key)
+            if not request.POST:
+                request.POST = post_data
+
+            if post_session_generic_review_store_key in request.session:
+                request.session.pop(post_session_generic_review_store_key)
+
     if not redirect_url:
         try:
             model = get_model(*post_data.get("content_type", "").split(".", 1))
@@ -210,7 +218,8 @@ def write_review(request, content_type_id, object_id, template="generic/includes
 		response = initial_validation_review(request, prefix, content_type_id, object_id, store)
 
 		if isinstance(response, HttpResponse):
-		    return response
+			return response
+
 		obj, post_data = response
 
 		form = ReviewForm(request, obj, request.POST)
