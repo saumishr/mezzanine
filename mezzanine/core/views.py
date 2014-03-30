@@ -129,6 +129,13 @@ def search(request, template="search_results.html"):
     queryWithQuotes = '"%s"' % query
     results = search_model.objects.search(queryWithQuotes, for_user=request.user)
 
+    '''
+        Check for search query to match to a store. If it is include the store even though that store is not yet published.
+    '''
+    blog_post = BlogPost.objects.filter(title__iexact=query)
+
+    results = results.filter(status=CONTENT_STATUS_PUBLISHED) | blog_post
+
     filters = request.GET.get("filter", '')
     filter_arr = []
     if filters != '':
@@ -161,8 +168,9 @@ def search(request, template="search_results.html"):
                                         order_by=('-overall_average', '-fieldsum', '-comments_count', '-followers',)).distinct()
 
     #results.sort(searchComparator, reverse=True)
-    results = results.filter(status=CONTENT_STATUS_PUBLISHED)
+
     paginated = paginate(results, page, per_page, max_paging_links)
+
     context = {"query": query, "results": paginated,
                "search_type": search_type}
     return render(request, template, context)
